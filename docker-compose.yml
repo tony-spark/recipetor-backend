@@ -8,3 +8,7 @@ services:
   ingredient-service:
     build: ingredient-service/
     image: ghcr.io/tony-spark/recipetor-ingredient-service
+
+  recipe-service:
+    build: recipe-service/
+    image: ghcr.io/tony-spark/recipetor-recipe-service

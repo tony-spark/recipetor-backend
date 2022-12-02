@@ -4,3 +4,7 @@ services:
   user-service:
     build: user-service/
     image: ghcr.io/tony-spark/recipetor-user-service
+
+  ingredient-service:
+    build: ingredient-service/
+    image: ghcr.io/tony-spark/recipetor-ingredient-service

@@ -1,22 +1,21 @@
 package main
 
 import (
-	"fmt"
-	"github.com/tony-spark/recipetor-backend/ingredient-service/internal/model"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func main() {
-	fmt.Println("starting ingredient service...")
-
-	var i model.Ingredient
-	fmt.Printf("%+v\n", i)
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339})
+	log.Info().Msg("starting ingredient service...")
 
 	terminateSignal := make(chan os.Signal, 1)
 	signal.Notify(terminateSignal, syscall.SIGINT, syscall.SIGTERM)
 
 	<-terminateSignal
-	fmt.Println("ingredient service interrupted via system signal")
+	log.Info().Msg("ingredient service interrupted via system signal")
 }

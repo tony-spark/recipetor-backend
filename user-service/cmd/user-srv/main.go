@@ -1,23 +1,21 @@
 package main
 
 import (
-	"fmt"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/tony-spark/recipetor-backend/user-service/internal/model"
+	"time"
 )
 
 func main() {
-	fmt.Println("starting user service...")
-
-	var u model.User
-	fmt.Printf("- %+v\n", u)
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339})
+	log.Info().Msg("starting user service...")
 
 	terminateSignal := make(chan os.Signal, 1)
 	signal.Notify(terminateSignal, syscall.SIGINT, syscall.SIGTERM)
 
 	<-terminateSignal
-	fmt.Println("user service interrupted via system signal")
+	log.Info().Msg("user service interrupted via system signal")
 }

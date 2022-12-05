@@ -8,3 +8,8 @@ type User struct {
 	Password     string    `json:"-" bson:"password"`
 	RegisteredAt time.Time `json:"registered_at" bson:"registered_at"`
 }
+
+type CreateUserDTO struct {
+	Email    string `json:"email" bson:"email"`
+	Password string `json:"password" bson:"password"`
+}

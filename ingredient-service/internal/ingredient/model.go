@@ -12,3 +12,8 @@ type NutritionFacts struct {
 	Fats          float64 `json:"fats" bson:"fats"`
 	Carbohydrates float64 `json:"carbohydrates" bson:"carbohydrates"`
 }
+
+type CreateIngredientDTO struct {
+	Name           string          `json:"name" bson:"name"`
+	NutritionFacts *NutritionFacts `json:"nutrition_facts,omitempty" bson:"nutrition_facts,omitempty"`
+}

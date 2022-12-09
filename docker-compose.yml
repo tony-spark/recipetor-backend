@@ -1,14 +1,37 @@
 version: '3'
 
 services:
+  mongo:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: dev
+      MONGO_INITDB_ROOT_PASSWORD: dev
+
+  mongo-express:
+    image: mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: dev
+      ME_CONFIG_MONGODB_ADMINPASSWORD: dev
+      ME_CONFIG_MONGODB_URL: mongodb://dev:dev@mongo:27017/
+
   user-service:
     build: user-service/
     image: ghcr.io/tony-spark/recipetor-user-service
+    depends_on:
+      - mongo
 
   ingredient-service:
     build: ingredient-service/
     image: ghcr.io/tony-spark/recipetor-ingredient-service
+    depends_on:
+      - mongo
 
   recipe-service:
     build: recipe-service/
     image: ghcr.io/tony-spark/recipetor-recipe-service
+    depends_on:
+      - mongo

@@ -6,23 +6,23 @@ import (
 	"fmt"
 	apperror "github.com/tony-spark/recipetor-backend/user-service/internal/errors"
 	"github.com/tony-spark/recipetor-backend/user-service/internal/user"
-	storage2 "github.com/tony-spark/recipetor-backend/user-service/internal/user/storage"
+	"github.com/tony-spark/recipetor-backend/user-service/internal/user/storage"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type storage struct {
+type mongoStorage struct {
 	collection *mongo.Collection
 }
 
-func NewStorage(db *mongo.Database) storage2.Storage {
-	return storage{
+func NewStorage(db *mongo.Database) storage.Storage {
+	return mongoStorage{
 		collection: db.Collection("users"),
 	}
 }
 
-func (m storage) Create(ctx context.Context, user user.User) (string, error) {
+func (m mongoStorage) Create(ctx context.Context, user user.User) (string, error) {
 	result, err := m.collection.InsertOne(ctx, user)
 	if err != nil {
 		return "", fmt.Errorf("failed to insert user: %w", err)
@@ -36,7 +36,7 @@ func (m storage) Create(ctx context.Context, user user.User) (string, error) {
 	return id.Hex(), nil
 }
 
-func (m storage) FindById(ctx context.Context, id string) (user user.User, err error) {
+func (m mongoStorage) FindById(ctx context.Context, id string) (user user.User, err error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return
@@ -53,7 +53,7 @@ func (m storage) FindById(ctx context.Context, id string) (user user.User, err e
 	return
 }
 
-func (m storage) FindByEmail(ctx context.Context, email string) (user user.User, err error) {
+func (m mongoStorage) FindByEmail(ctx context.Context, email string) (user user.User, err error) {
 	result := m.collection.FindOne(ctx, bson.M{"email": email})
 	if result.Err() != nil {
 		if errors.Is(result.Err(), mongo.ErrNoDocuments) {

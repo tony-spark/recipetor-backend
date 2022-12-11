@@ -10,6 +10,6 @@ type User struct {
 }
 
 type CreateUserDTO struct {
-	Email    string `json:"email" bson:"email"`
-	Password string `json:"password" bson:"password"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }

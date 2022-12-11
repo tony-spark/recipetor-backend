@@ -6,6 +6,7 @@ import (
 	"fmt"
 	apperror "github.com/tony-spark/recipetor-backend/user-service/internal/errors"
 	"github.com/tony-spark/recipetor-backend/user-service/internal/user"
+	storage2 "github.com/tony-spark/recipetor-backend/user-service/internal/user/storage"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -15,7 +16,7 @@ type storage struct {
 	collection *mongo.Collection
 }
 
-func NewStorage(db *mongo.Database) user.Storage {
+func NewStorage(db *mongo.Database) storage2.Storage {
 	return storage{
 		collection: db.Collection("users"),
 	}

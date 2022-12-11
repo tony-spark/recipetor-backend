@@ -28,4 +28,5 @@ jobs:
       - name: Run tests
         run: |
           TEST_MONGO_DSN=mongodb://test:test@mongo-test-db:27017
+          cd user-service
           go test -v -cover ./...

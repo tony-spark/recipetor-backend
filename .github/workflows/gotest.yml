@@ -26,7 +26,8 @@ jobs:
           go build -o bin/user-srv cmd/user-srv/main.go
 
       - name: Run tests
+        env:
+          TEST_MONGO_DSN: mongodb://test:test@mongo-test-db:27017
         run: |
-          TEST_MONGO_DSN=mongodb://test:test@mongo-test-db:27017
           cd user-service
           go test -v -cover ./...

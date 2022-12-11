@@ -74,7 +74,8 @@ func (m mongoStorage) FindByID(ctx context.Context, id string) (ing ingredient.I
 }
 
 func (m mongoStorage) SearchByName(ctx context.Context, query string, fillNutritionInfo bool) (ings []ingredient.Ingredient, err error) {
-	filter := bson.D{{"$text", bson.D{{"$search", query}}}}
+	filter := bson.D{{Key: "$text",
+		Value: bson.D{{Key: "$search", Value: query}}}}
 
 	cursor, err := m.collection.Find(ctx, filter)
 	if err != nil {

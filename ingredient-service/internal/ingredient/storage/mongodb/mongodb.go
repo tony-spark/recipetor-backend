@@ -56,7 +56,7 @@ func (m mongoStorage) Create(ctx context.Context, ingredient ingredient.Ingredie
 	return id.Hex(), nil
 }
 
-func (m mongoStorage) FindById(ctx context.Context, id string) (ing ingredient.Ingredient, err error) {
+func (m mongoStorage) FindByID(ctx context.Context, id string) (ing ingredient.Ingredient, err error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return

@@ -58,7 +58,7 @@ func TestStorage(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotEmpty(t, id)
 
-		got, err := s.FindById(ctx, id)
+		got, err := s.FindByID(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, inserted.Name, got.Name)
 	})

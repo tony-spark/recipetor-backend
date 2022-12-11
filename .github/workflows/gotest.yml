@@ -27,7 +27,7 @@ jobs:
 
       - name: Run tests
         env:
-          TEST_MONGO_DSN: mongodb://test:test@mongo-test-db:27017?authSource=admin
+          TEST_MONGO_DSN: mongodb://test:test@mongo-test-db:27017/test?authSource=admin
         run: |
           cd user-service
           go test -v -cover ./...
@@ -54,7 +54,7 @@ jobs:
 
       - name: Run tests
         env:
-          TEST_MONGO_DSN: mongodb://test:test@mongo-test-db:27017?authSource=admin
+          TEST_MONGO_DSN: mongodb://test:test@mongo-test-db:27017/test?authSource=admin
         run: |
           cd ingredient-service
           go test -v -cover ./...

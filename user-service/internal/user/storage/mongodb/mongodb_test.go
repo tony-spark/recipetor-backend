@@ -2,7 +2,6 @@ package mongodb
 
 import (
 	"context"
-	"github.com/caarlos0/env/v6"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -10,6 +9,7 @@ import (
 	"github.com/tony-spark/recipetor-backend/user-service/internal/user"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"os"
 	"testing"
 	"time"
 )
@@ -92,15 +92,11 @@ func TestStorage(t *testing.T) {
 }
 
 func getTestCollection(t *testing.T) (*mongo.Database, func(ctx context.Context) error) {
-	type testConfig struct {
-		DSN string `env:"TEST_MONGO_DSN" envDefault:"mongodb://dev:dev@localhost:27017"`
+	dsn := os.Getenv("TEST_MONGO_DSN")
+	if len(dsn) == 0 {
+		dsn = "mongodb://dev:dev@localhost:27017"
 	}
-	var config testConfig
-	err := env.Parse(&config)
-	if err != nil {
-		t.Fatalf("could not parse test env")
-	}
-	client, err := mongo.NewClient(options.Client().ApplyURI(config.DSN))
+	client, err := mongo.NewClient(options.Client().ApplyURI(dsn))
 	if err != nil {
 		t.Fatalf("could not create connection to test DB: %s", err)
 	}

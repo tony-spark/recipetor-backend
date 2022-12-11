@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/caarlos0/env/v6"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/tony-spark/recipetor-backend/user-service/internal/user"
@@ -85,7 +86,15 @@ func TestService(t *testing.T) {
 }
 
 func getTestStorage(t *testing.T) (storage.Storage, func(ctx context.Context) error) {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://dev:dev@localhost:27017"))
+	type testConfig struct {
+		DSN string `env:"TEST_MONGO_DSN" envDefault:"mongodb://dev:dev@localhost:27017"`
+	}
+	var config testConfig
+	err := env.Parse(&config)
+	if err != nil {
+		t.Fatalf("could not parse test env")
+	}
+	client, err := mongo.NewClient(options.Client().ApplyURI(config.DSN))
 	if err != nil {
 		t.Fatalf("could not create connection to test DB: %s", err)
 	}

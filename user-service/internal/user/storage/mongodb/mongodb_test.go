@@ -53,7 +53,7 @@ func TestStorage(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotEmpty(t, id)
 
-		u, err = s.FindById(ctx, id)
+		u, err = s.FindByID(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, u.Email, "test1@test.com")
 	})
@@ -61,7 +61,7 @@ func TestStorage(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		_, err := s.FindById(ctx, "639361be532c9301e02ff4c0")
+		_, err := s.FindByID(ctx, "639361be532c9301e02ff4c0")
 		assert.EqualError(t, err, errors.ErrNotFound.Error())
 	})
 	t.Run("create user and find by email", func(t *testing.T) {

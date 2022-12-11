@@ -1,7 +1,7 @@
 package ingredient
 
 type Ingredient struct {
-	Id             string          `json:"id" bson:"_id"`
+	ID             string          `json:"id" bson:"_id"`
 	Name           string          `json:"name" bson:"name"`
 	BaseUnit       string          `json:"base_unit" bson:"base_unit"`
 	NutritionFacts *NutritionFacts `json:"nutrition_facts,omitempty" bson:"nutrition_facts,omitempty"`

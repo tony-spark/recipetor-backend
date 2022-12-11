@@ -58,13 +58,13 @@ func TestService(t *testing.T) {
 			Email:    "user2@test.com",
 			Password: "12345",
 		}
-		createdId, err := s.Create(ctx, dto)
+		createdID, err := s.Create(ctx, dto)
 		assert.NoError(t, err)
-		assert.NotEmpty(t, createdId)
+		assert.NotEmpty(t, createdID)
 
 		u, err := s.GetByEmailAndPassword(ctx, dto.Email, dto.Password)
 		assert.NoError(t, err)
-		assert.Equal(t, createdId, u.Id)
+		assert.Equal(t, createdID, u.ID)
 	})
 	t.Run("create user and get by id", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -74,11 +74,11 @@ func TestService(t *testing.T) {
 			Email:    "user3@test.com",
 			Password: "12345",
 		}
-		createdId, err := s.Create(ctx, dto)
+		createdID, err := s.Create(ctx, dto)
 		assert.NoError(t, err)
-		assert.NotEmpty(t, createdId)
+		assert.NotEmpty(t, createdID)
 
-		u, err := s.GetById(ctx, createdId)
+		u, err := s.GetByID(ctx, createdID)
 		assert.NoError(t, err)
 		assert.Equal(t, u.Email, dto.Email)
 	})

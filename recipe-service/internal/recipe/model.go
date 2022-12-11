@@ -1,7 +1,7 @@
 package recipe
 
 type Recipe struct {
-	Id          string `json:"id" bson:"_id"`
+	ID          string `json:"id" bson:"_id"`
 	Name        string `json:"name" bson:"name"`
 	CreatedBy   string `json:"created_by" bson:"created_by"`
 	Ingredients []struct {
@@ -28,7 +28,7 @@ type CreateRecipeDTO struct {
 }
 
 type UpdateRecipeDTO struct {
-	Id          string `json:"id" bson:"_id"`
+	ID          string `json:"id" bson:"_id"`
 	Name        string `json:"name" bson:"name"`
 	Ingredients []struct {
 		IngredientId string  `json:"ingredient" bson:"ingredientId"`

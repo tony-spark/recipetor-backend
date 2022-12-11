@@ -7,6 +7,6 @@ import (
 
 type Storage interface {
 	Create(ctx context.Context, user user.User) (string, error)
-	FindById(ctx context.Context, id string) (user.User, error)
+	FindByID(ctx context.Context, id string) (user.User, error)
 	FindByEmail(ctx context.Context, email string) (user.User, error)
 }

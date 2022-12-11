@@ -13,7 +13,7 @@ import (
 type Service interface {
 	Create(ctx context.Context, dto user.CreateUserDTO) (string, error)
 	GetByEmailAndPassword(ctx context.Context, email string, password string) (user.User, error)
-	GetById(ctx context.Context, id string) (user.User, error)
+	GetByID(ctx context.Context, id string) (user.User, error)
 }
 
 type service struct {
@@ -76,7 +76,7 @@ func (s service) GetByEmailAndPassword(ctx context.Context, email string, passwo
 	return
 }
 
-func (s service) GetById(ctx context.Context, id string) (u user.User, err error) {
-	u, err = s.storage.FindById(ctx, id)
+func (s service) GetByID(ctx context.Context, id string) (u user.User, err error) {
+	u, err = s.storage.FindByID(ctx, id)
 	return
 }

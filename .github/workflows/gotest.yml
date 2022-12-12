@@ -58,3 +58,30 @@ jobs:
         run: |
           cd ingredient-service
           go test -v -cover ./...
+
+  recipe-service-test:
+    runs-on: ubuntu-latest
+    container: golang:1.19
+
+    services:
+      mongo-test-db:
+        image: mongo:6
+        env:
+          MONGO_INITDB_ROOT_USERNAME: test
+          MONGO_INITDB_ROOT_PASSWORD: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build binary
+        run: |
+          cd recipe-service
+          go build -o bin/recipe-srv cmd/recipe-srv/main.go
+
+      - name: Run tests
+        env:
+          TEST_MONGO_DSN: mongodb://test:test@mongo-test-db:27017/test?authSource=admin
+        run: |
+          cd ingredient-service
+          go test -v -cover ./...

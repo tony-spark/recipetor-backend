@@ -30,15 +30,25 @@ services:
     build: user-service/
     image: ghcr.io/tony-spark/recipetor-user-service
     environment:
-      MONGO_DSN: mongodb://admin:admin@user-service-db:27017
+      MONGO_DSN: mongodb://admin:admin@user-service-db:27017/users?authSource=admin
+      MONGO_DB: users
     depends_on:
       - user-service-db
+
+  ingredient-service-db:
+    image: mongo:6
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
 
   ingredient-service:
     build: ingredient-service/
     image: ghcr.io/tony-spark/recipetor-ingredient-service
+    environment:
+      MONGO_DSN: mongodb://admin:admin@ingredient-service-db:27017/ingredients?authSource=admin
+      MONGO_DB: ingredients
     depends_on:
-      - mongo
+      - ingredient-service-db
 
   recipe-service:
     build: recipe-service/

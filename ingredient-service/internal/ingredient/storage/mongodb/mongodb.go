@@ -14,13 +14,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 type mongoStorage struct {
+	client     *mongo.Client
 	collection *mongo.Collection
 }
 
-func New(db *mongo.Database, dsn string) (storage.Storage, error) {
+func NewStorage(dsn string, dbname string) (storage.Storage, error) {
 	driver, err := iofs.New(edb.EmbeddedDBFiles, "migrations")
 	if err != nil {
 		return nil, fmt.Errorf("could not open migrations: %w", err)
@@ -36,8 +39,23 @@ func New(db *mongo.Database, dsn string) (storage.Storage, error) {
 		return nil, fmt.Errorf("could not execute db migrations: %w", err)
 	}
 
+	client, err := mongo.NewClient(options.Client().ApplyURI(dsn))
+	if err != nil {
+		return nil, fmt.Errorf("could not create connection to test DB: %w", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err = client.Connect(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not connect to test DB: %w", err)
+	}
+
+	db := client.Database(dbname)
+
 	collection := db.Collection("ingredients")
 	return mongoStorage{
+		client:     client,
 		collection: collection,
 	}, nil
 }
@@ -73,7 +91,7 @@ func (m mongoStorage) FindByID(ctx context.Context, id string) (ing ingredient.I
 	return
 }
 
-func (m mongoStorage) SearchByName(ctx context.Context, query string, fillNutritionInfo bool) (ings []ingredient.Ingredient, err error) {
+func (m mongoStorage) SearchByName(ctx context.Context, query string) (ings []ingredient.Ingredient, err error) {
 	filter := bson.D{{Key: "$text",
 		Value: bson.D{{Key: "$search", Value: query}}}}
 

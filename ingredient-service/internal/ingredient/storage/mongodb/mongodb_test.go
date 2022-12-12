@@ -6,8 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tony-spark/recipetor-backend/ingredient-service/internal/ingredient"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/tony-spark/recipetor-backend/ingredient-service/internal/ingredient/storage"
 	"os"
 	"testing"
 	"time"
@@ -18,7 +17,11 @@ func TestStorage(t *testing.T) {
 	if len(dsn) == 0 {
 		dsn = "mongodb://dev:dev@localhost:27017/test?authSource=admin"
 	}
-	db, cleanup := getTestDB(t, dsn)
+
+	s, cleanup, err := getTestStorage(dsn, "test")
+	if err != nil {
+		t.Fatalf("could not initialize test storage: %s", err)
+	}
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -28,11 +31,6 @@ func TestStorage(t *testing.T) {
 			t.Fatalf("test cleanup failed: %s", err)
 		}
 	}()
-
-	s, err := New(db, dsn)
-	if err != nil {
-		t.Fatalf("could not initialize storage: %s", err)
-	}
 
 	t.Run("create ingredient", func(t *testing.T) {
 		i := ingredient.Ingredient{
@@ -87,29 +85,23 @@ func TestStorage(t *testing.T) {
 			assert.NotEmpty(t, id)
 		}
 
-		got, err := s.SearchByName(ctx, "сахар", false)
+		got, err := s.SearchByName(ctx, "сахар")
 		assert.NoError(t, err)
 		assert.Equal(t, 2, len(got))
 	})
 }
 
-func getTestDB(t *testing.T, dsn string) (*mongo.Database, func(ctx context.Context) error) {
-	client, err := mongo.NewClient(options.Client().ApplyURI(dsn))
+func getTestStorage(dsn string, dbname string) (storage.Storage, func(ctx context.Context) error, error) {
+	stor, err := NewStorage(dsn, dbname)
 	if err != nil {
-		t.Fatalf("could not create connection to test DB: %s", err)
+		return nil, nil, err
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	err = client.Connect(ctx)
-	if err != nil {
-		t.Fatalf("could not connect to test DB: %s", err)
-	}
+	mongoStor := stor.(mongoStorage)
 	cleanup := func(ctx context.Context) error {
-		err := client.Database("test").Drop(ctx)
+		err := mongoStor.client.Database(dbname).Drop(ctx)
 		log.Err(err)
-		return client.Disconnect(ctx)
+		return mongoStor.client.Disconnect(ctx)
 	}
 
-	return client.Database("test"), cleanup
+	return stor, cleanup, nil
 }

@@ -1,22 +1,23 @@
-package mongodb
+package service
 
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tony-spark/recipetor-backend/ingredient-service/internal/ingredient"
+	"github.com/tony-spark/recipetor-backend/ingredient-service/internal/ingredient/storage/mongodb"
 	"os"
 	"testing"
 	"time"
 )
 
-func TestStorage(t *testing.T) {
+func TestService(t *testing.T) {
 	dsn := os.Getenv("TEST_MONGO_DSN")
 	if len(dsn) == 0 {
 		dsn = "mongodb://dev:dev@localhost:27017/test?authSource=admin"
 	}
 
-	s, cleanup, err := NewTestStorage(dsn, "test")
+	stor, cleanup, err := mongodb.NewTestStorage(dsn, "test")
 	if err != nil {
 		t.Fatalf("could not initialize test storage: %s", err)
 	}
@@ -30,61 +31,65 @@ func TestStorage(t *testing.T) {
 		}
 	}()
 
-	t.Run("create ingredient", func(t *testing.T) {
-		i := ingredient.Ingredient{
-			Name:     "мука",
+	serv := NewService(stor)
+
+	t.Run("add ingredient", func(t *testing.T) {
+		dto := ingredient.CreateIngredientDTO{
+			Name:     "соль",
 			BaseUnit: "г",
 		}
+
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		id, err := s.Create(ctx, i)
+		id, err := serv.Create(ctx, dto)
 		require.NoError(t, err)
 		assert.NotEmpty(t, id)
 	})
-	t.Run("create ingredient and get by id", func(t *testing.T) {
-		inserted := ingredient.Ingredient{
-			Name:     "перец молотый",
+	t.Run("add ingredient and find by id", func(t *testing.T) {
+		dto := ingredient.CreateIngredientDTO{
+			Name:     "сахар",
 			BaseUnit: "г",
 		}
+
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		id, err := s.Create(ctx, inserted)
+		id, err := serv.Create(ctx, dto)
 		require.NoError(t, err)
 		assert.NotEmpty(t, id)
 
-		got, err := s.FindByID(ctx, id)
+		ingr, err := serv.GetById(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, inserted.Name, got.Name)
+		assert.Equal(t, dto.Name, ingr.Name)
 	})
-	t.Run("create ingredients and search by name", func(t *testing.T) {
-		ingredients := []ingredient.Ingredient{
+	t.Run("add ingredients and search by name", func(t *testing.T) {
+		dtos := []ingredient.CreateIngredientDTO{
 			{
-				Name:     "сахар",
+				Name:     "гороховая мука",
 				BaseUnit: "г",
 			},
 			{
-				Name:     "ванильный сахар",
+				Name:     "кукурузная мука",
 				BaseUnit: "г",
 			},
 			{
-				Name:     "соль",
-				BaseUnit: "г",
+				Name:     "яблоко",
+				BaseUnit: "шт",
 			},
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		for _, ing := range ingredients {
-			id, err := s.Create(ctx, ing)
+		for _, dto := range dtos {
+			id, err := serv.Create(ctx, dto)
 			require.NoError(t, err)
 			assert.NotEmpty(t, id)
 		}
 
-		got, err := s.SearchByName(ctx, "сахар")
-		assert.NoError(t, err)
-		assert.Equal(t, 2, len(got))
+		ingrs, err := serv.SearchByName(ctx, "мука")
+		require.NoError(t, err)
+		assert.Equal(t, 2, len(ingrs))
 	})
 }

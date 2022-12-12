@@ -7,6 +7,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/mongodb"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
+	"github.com/rs/zerolog/log"
 	edb "github.com/tony-spark/recipetor-backend/ingredient-service/db"
 	apperror "github.com/tony-spark/recipetor-backend/ingredient-service/internal/errors"
 	"github.com/tony-spark/recipetor-backend/ingredient-service/internal/ingredient"
@@ -60,9 +61,27 @@ func NewStorage(dsn string, dbname string) (storage.Storage, error) {
 	}, nil
 }
 
+func NewTestStorage(dsn string, dbname string) (storage.Storage, func(ctx context.Context) error, error) {
+	stor, err := NewStorage(dsn, dbname)
+	if err != nil {
+		return nil, nil, err
+	}
+	mongoStor := stor.(mongoStorage)
+	cleanup := func(ctx context.Context) error {
+		err := mongoStor.client.Database(dbname).Drop(ctx)
+		log.Err(err)
+		return mongoStor.client.Disconnect(ctx)
+	}
+
+	return stor, cleanup, nil
+}
+
 func (m mongoStorage) Create(ctx context.Context, ingredient ingredient.Ingredient) (string, error) {
 	result, err := m.collection.InsertOne(ctx, ingredient)
 	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			return "", apperror.ErrDuplicate
+		}
 		return "", fmt.Errorf("failed to insert user: %w", err)
 	}
 

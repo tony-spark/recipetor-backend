@@ -15,6 +15,7 @@ type NutritionFacts struct {
 }
 
 type CreateIngredientDTO struct {
-	Name           string          `json:"name" bson:"name"`
-	NutritionFacts *NutritionFacts `json:"nutrition_facts,omitempty" bson:"nutrition_facts,omitempty"`
+	Name           string          `json:"name"`
+	BaseUnit       string          `json:"base_unit"`
+	NutritionFacts *NutritionFacts `json:"nutrition_facts,omitempty"`
 }

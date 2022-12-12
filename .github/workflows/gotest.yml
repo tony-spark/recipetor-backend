@@ -83,5 +83,5 @@ jobs:
         env:
           TEST_MONGO_DSN: mongodb://test:test@mongo-test-db:27017/test?authSource=admin
         run: |
-          cd ingredient-service
+          cd recipe-service
           go test -v -cover ./...

@@ -63,7 +63,7 @@ func TestStorage(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotEmpty(t, id)
 
-		got, err := s.GetById(ctx, id)
+		got, err := s.GetByID(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, r.Name, got.Name)
 	})
@@ -168,7 +168,7 @@ func TestStorage(t *testing.T) {
 		err = s.Update(ctx, updated)
 		require.NoError(t, err)
 
-		got, err := s.GetById(ctx, id)
+		got, err := s.GetByID(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, updated.Name, got.Name)
 	})
@@ -191,7 +191,7 @@ func TestStorage(t *testing.T) {
 		err = s.Delete(ctx, id)
 		require.NoError(t, err)
 
-		got, err := s.GetById(ctx, id)
+		got, err := s.GetByID(ctx, id)
 		assert.EqualError(t, err, apperror.ErrNotFound.Error())
 		assert.Empty(t, got)
 	})

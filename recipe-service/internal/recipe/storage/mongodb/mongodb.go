@@ -72,7 +72,7 @@ func (m mongoStorage) Create(ctx context.Context, recipe recipe.Recipe) (string,
 	return id.Hex(), nil
 }
 
-func (m mongoStorage) GetById(ctx context.Context, id string) (r recipe.Recipe, err error) {
+func (m mongoStorage) GetByID(ctx context.Context, id string) (r recipe.Recipe, err error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return r, fmt.Errorf("wrong id: %w", err)

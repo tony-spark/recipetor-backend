@@ -59,7 +59,7 @@ func TestService(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotEmpty(t, id)
 
-		ingr, err := serv.GetById(ctx, id)
+		ingr, err := serv.GetByID(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, dto.Name, ingr.Name)
 	})

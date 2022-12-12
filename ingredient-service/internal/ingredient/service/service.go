@@ -11,7 +11,7 @@ import (
 
 type Service interface {
 	Create(ctx context.Context, dto ingredient.CreateIngredientDTO) (string, error)
-	GetById(ctx context.Context, id string) (ingredient.Ingredient, error)
+	GetByID(ctx context.Context, id string) (ingredient.Ingredient, error)
 	SearchByName(ctx context.Context, nameQuery string) ([]ingredient.Ingredient, error)
 }
 
@@ -41,7 +41,7 @@ func (s service) Create(ctx context.Context, dto ingredient.CreateIngredientDTO)
 	return id, nil
 }
 
-func (s service) GetById(ctx context.Context, id string) (ingr ingredient.Ingredient, err error) {
+func (s service) GetByID(ctx context.Context, id string) (ingr ingredient.Ingredient, err error) {
 	ingr, err = s.storage.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, apperror.ErrNotFound) {

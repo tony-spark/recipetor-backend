@@ -2,20 +2,26 @@ package mongodb
 
 import (
 	"context"
-	"github.com/rs/zerolog/log"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tony-spark/recipetor-backend/user-service/internal/errors"
 	"github.com/tony-spark/recipetor-backend/user-service/internal/user"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"os"
-	"testing"
-	"time"
 )
 
 func TestStorage(t *testing.T) {
-	db, cleanup := getTestCollection(t)
+	dsn := os.Getenv("TEST_MONGO_DSN")
+	if len(dsn) == 0 {
+		dsn = "mongodb://dev:dev@localhost:27017/test?authSource=admin"
+	}
+
+	s, cleanup, err := NewTestStorage(dsn, "test")
+	if err != nil {
+		t.Fatalf("could not initialize test storage: %s", err)
+	}
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -25,8 +31,6 @@ func TestStorage(t *testing.T) {
 			t.Fatalf("test cleanup failed: %s", err)
 		}
 	}()
-
-	s := NewStorage(db)
 
 	t.Run("create user", func(t *testing.T) {
 		u := user.User{
@@ -89,29 +93,4 @@ func TestStorage(t *testing.T) {
 		_, err := s.FindByEmail(ctx, "notfound@test.com")
 		assert.EqualError(t, err, errors.ErrNotFound.Error())
 	})
-}
-
-func getTestCollection(t *testing.T) (*mongo.Database, func(ctx context.Context) error) {
-	dsn := os.Getenv("TEST_MONGO_DSN")
-	if len(dsn) == 0 {
-		dsn = "mongodb://dev:dev@localhost:27017"
-	}
-	client, err := mongo.NewClient(options.Client().ApplyURI(dsn))
-	if err != nil {
-		t.Fatalf("could not create connection to test DB: %s", err)
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	err = client.Connect(ctx)
-	if err != nil {
-		t.Fatalf("could not connect to test DB: %s", err)
-	}
-	cleanup := func(ctx context.Context) error {
-		err := client.Database("test").Collection("users").Drop(ctx)
-		log.Err(err)
-		return client.Disconnect(ctx)
-	}
-
-	return client.Database("test"), cleanup
 }

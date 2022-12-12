@@ -4,6 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
+	"github.com/rs/zerolog/log"
+	"go.mongodb.org/mongo-driver/mongo/options"
+
 	apperror "github.com/tony-spark/recipetor-backend/user-service/internal/errors"
 	"github.com/tony-spark/recipetor-backend/user-service/internal/user"
 	"github.com/tony-spark/recipetor-backend/user-service/internal/user/storage"
@@ -13,13 +18,45 @@ import (
 )
 
 type mongoStorage struct {
+	client     *mongo.Client
 	collection *mongo.Collection
 }
 
-func NewStorage(db *mongo.Database) storage.Storage {
-	return mongoStorage{
-		collection: db.Collection("users"),
+func NewStorage(dsn string, dbname string) (storage.Storage, error) {
+	client, err := mongo.NewClient(options.Client().ApplyURI(dsn))
+	if err != nil {
+		return nil, fmt.Errorf("could not create connection to test DB: %w", err)
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err = client.Connect(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not connect to test DB: %w", err)
+	}
+
+	db := client.Database(dbname)
+
+	collection := db.Collection("ingredients")
+	return mongoStorage{
+		client:     client,
+		collection: collection,
+	}, nil
+}
+
+func NewTestStorage(dsn string, dbname string) (storage.Storage, func(ctx context.Context) error, error) {
+	stor, err := NewStorage(dsn, dbname)
+	if err != nil {
+		return nil, nil, err
+	}
+	mongoStor := stor.(mongoStorage)
+	cleanup := func(ctx context.Context) error {
+		err := mongoStor.client.Database(dbname).Drop(ctx)
+		log.Err(err)
+		return mongoStor.client.Disconnect(ctx)
+	}
+
+	return stor, cleanup, nil
 }
 
 func (m mongoStorage) Create(ctx context.Context, user user.User) (string, error) {

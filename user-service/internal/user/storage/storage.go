@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+
 	"github.com/tony-spark/recipetor-backend/user-service/internal/user"
 )
 

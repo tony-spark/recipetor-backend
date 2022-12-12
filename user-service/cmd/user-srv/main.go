@@ -1,18 +1,16 @@
 package main
 
 import (
-	"context"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/tony-spark/recipetor-backend/user-service/internal/config"
 	"github.com/tony-spark/recipetor-backend/user-service/internal/user/service"
 	"github.com/tony-spark/recipetor-backend/user-service/internal/user/storage/mongodb"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 func main() {
@@ -24,23 +22,13 @@ func main() {
 		log.Fatal().Err(err).Msg("could not load config")
 	}
 
-	mongoClient, err := mongo.NewClient(options.Client().ApplyURI(config.Config.MongoDSN))
+	stor, err := mongodb.NewStorage(config.Config.Mongo.DSN, config.Config.Mongo.DB)
 	if err != nil {
-		log.Fatal().Err(err).Msg("could not create connection to MongoDB")
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	err = mongoClient.Connect(ctx)
-	if err != nil {
-		log.Fatal().Err(err).Msg("could not connect to MongoDB")
+		log.Fatal().Err(err).Msg("could not initialize storage")
 	}
 	log.Info().Msg("connected to MongoDB")
 
-	db := mongoClient.Database("test")
-	storage := mongodb.NewStorage(db)
-	_ = service.NewService(storage)
+	_ = service.NewService(stor)
 
 	terminateSignal := make(chan os.Signal, 1)
 	signal.Notify(terminateSignal, syscall.SIGINT, syscall.SIGTERM)

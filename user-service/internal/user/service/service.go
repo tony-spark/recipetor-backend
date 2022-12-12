@@ -3,11 +3,12 @@ package service
 import (
 	"context"
 	"fmt"
+	"net/mail"
+	"time"
+
 	"github.com/tony-spark/recipetor-backend/user-service/internal/user"
 	"github.com/tony-spark/recipetor-backend/user-service/internal/user/storage"
 	"golang.org/x/crypto/bcrypt"
-	"net/mail"
-	"time"
 )
 
 type Service interface {

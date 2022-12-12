@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  mongo:
+  mongo-dev:
     image: mongo:6
     ports:
       - "27017:27017"
@@ -16,9 +16,9 @@ services:
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: dev
       ME_CONFIG_MONGODB_ADMINPASSWORD: dev
-      ME_CONFIG_MONGODB_URL: mongodb://dev:dev@mongo:27017/
+      ME_CONFIG_MONGODB_URL: mongodb://dev:dev@mongo-dev:27017/
     depends_on:
-      - mongo
+      - mongo-dev
 
   user-service-db:
     image: mongo:6
@@ -50,8 +50,17 @@ services:
     depends_on:
       - ingredient-service-db
 
+  recipe-service-db:
+    image: mongo:6
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+
   recipe-service:
     build: recipe-service/
     image: ghcr.io/tony-spark/recipetor-recipe-service
+    environment:
+      MONGO_DSN: mongodb://admin:admin@recipe-service-db:27017/recipes?authSource=admin
+      MONGO_DB: recipes
     depends_on:
-      - mongo
+      - recipe-service-db

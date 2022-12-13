@@ -96,7 +96,7 @@ jobs:
 
       - name: Build binary
         run: |
-          cd recipe-service
+          cd nutrition-facts-service
           go build -o bin/nutrition-facts-srv cmd/nutrition-facts-srv/main.go
 
       - name: Run tests

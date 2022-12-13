@@ -2,7 +2,6 @@ package nutrition
 
 type Ingredient struct {
 	ID             string          `json:"id"`
-	Name           string          `json:"name"`
 	BaseUnit       string          `json:"base_unit"`
 	NutritionFacts *NutritionFacts `json:"nutrition_facts"`
 }
@@ -21,11 +20,12 @@ type RecipeIngredient struct {
 }
 
 type RecipeDTO struct {
-	ID          string             `json:"id"`
+	RecipeID    string             `json:"recipe_id"`
 	Ingredients []RecipeIngredient `json:"ingredients"`
 }
 
 type RecipeNutritionsDTO struct {
-	ID             string         `json:"id"`
+	RecipeID       string         `json:"recipe_id"`
 	NutritionFacts NutritionFacts `json:"nutrition_facts"`
+	Inaccurate     bool           `json:"is_inaccurate"`
 }

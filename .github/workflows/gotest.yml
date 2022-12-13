@@ -85,3 +85,23 @@ jobs:
         run: |
           cd recipe-service
           go test -v -cover ./...
+
+  nutrition-facts-service-test:
+    runs-on: ubuntu-latest
+    container: golang:1.19
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build binary
+        run: |
+          cd recipe-service
+          go build -o bin/nutrition-facts-srv cmd/nutrition-facts-srv/main.go
+
+      - name: Run tests
+        env:
+          TEST_MONGO_DSN: mongodb://test:test@mongo-test-db:27017/test?authSource=admin
+        run: |
+          cd nutrition-facts-service
+          go test -v -cover ./...

@@ -5,7 +5,7 @@ type Step struct {
 }
 
 type Ingredient struct {
-	IngredientID string  `json:"ingredient" bson:"ingredientId"`
+	IngredientID string  `json:"ingredient_id" bson:"ingredient_id"`
 	Unit         string  `json:"unit" bson:"unit"`
 	Amount       float64 `json:"amount" bson:"amount"`
 }

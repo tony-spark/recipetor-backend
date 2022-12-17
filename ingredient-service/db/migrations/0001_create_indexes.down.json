@@ -1,0 +1,10 @@
+[
+  {
+    "dropIndexes" : "ingredients",
+    "index" : "unique_name"
+  },
+  {
+    "dropIndexes" : "ingredients",
+    "index" : "text_name"
+  }
+]

@@ -1,0 +1,70 @@
+version: '3'
+
+services:
+  mongo-dev:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: dev
+      MONGO_INITDB_ROOT_PASSWORD: dev
+
+  mongo-express:
+    image: mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: dev
+      ME_CONFIG_MONGODB_ADMINPASSWORD: dev
+      ME_CONFIG_MONGODB_URL: mongodb://dev:dev@mongo-dev:27017/
+    depends_on:
+      - mongo-dev
+
+  user-service-db:
+    image: mongo:6
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+
+  user-service:
+    build: user-service/
+    image: ghcr.io/tony-spark/recipetor-user-service
+    environment:
+      MONGO_DSN: mongodb://admin:admin@user-service-db:27017/users?authSource=admin
+      MONGO_DB: users
+    depends_on:
+      - user-service-db
+
+  ingredient-service-db:
+    image: mongo:6
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+
+  ingredient-service:
+    build: ingredient-service/
+    image: ghcr.io/tony-spark/recipetor-ingredient-service
+    environment:
+      MONGO_DSN: mongodb://admin:admin@ingredient-service-db:27017/ingredients?authSource=admin
+      MONGO_DB: ingredients
+    depends_on:
+      - ingredient-service-db
+
+  recipe-service-db:
+    image: mongo:6
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+
+  recipe-service:
+    build: recipe-service/
+    image: ghcr.io/tony-spark/recipetor-recipe-service
+    environment:
+      MONGO_DSN: mongodb://admin:admin@recipe-service-db:27017/recipes?authSource=admin
+      MONGO_DB: recipes
+    depends_on:
+      - recipe-service-db
+
+  nutrition-facts-service:
+    build: nutrition-facts-service/
+    image: ghcr.io/tony-spark/recipetor-nutrition-facts-service

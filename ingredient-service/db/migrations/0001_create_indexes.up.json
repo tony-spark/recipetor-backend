@@ -1,0 +1,18 @@
+[{
+  "createIndexes" : "ingredients",
+  "indexes" : [
+    {
+      "key": {
+        "name" : 1
+      },
+      "name" : "unique_name",
+      "unique" : true
+    },
+    {
+      "key": {
+        "name" : "text"
+      },
+      "name" : "text_name"
+    }
+  ]
+}]

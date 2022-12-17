@@ -34,9 +34,14 @@ func NewStorage(dsn string, dbname string) (storage.Storage, error) {
 		return nil, fmt.Errorf("could not connect to test DB: %w", err)
 	}
 
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to ping DB: %w", err)
+	}
+
 	db := client.Database(dbname)
 
-	collection := db.Collection("ingredients")
+	collection := db.Collection("recipes")
 	return mongoStorage{
 		client:     client,
 		collection: collection,

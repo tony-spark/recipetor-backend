@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/tony-spark/recipetor-backend/user-service/internal/controller/kafka"
 	"os"
 	"os/signal"
 	"syscall"
@@ -28,11 +29,27 @@ func main() {
 	}
 	log.Info().Msg("connected to MongoDB")
 
-	_ = service.NewService(stor)
+	userService := service.NewService(stor)
+
+	// TODO: move to config
+	controller, err := kafka.NewController(userService, "localhost:29092")
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to initialize kafka controller")
+	}
+	go func() {
+		err := controller.Run()
+		if err != nil {
+			log.Fatal().Err(err).Msg("error running controller")
+		}
+	}()
 
 	terminateSignal := make(chan os.Signal, 1)
 	signal.Notify(terminateSignal, syscall.SIGINT, syscall.SIGTERM)
 
 	<-terminateSignal
+	err = controller.Stop()
+	if err != nil {
+		log.Fatal().Err(err).Msg("controller failed to stop properly")
+	}
 	log.Info().Msg("user service interrupted via system signal")
 }

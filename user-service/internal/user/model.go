@@ -13,3 +13,9 @@ type CreateUserDTO struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+type UserRegistrationDTO struct {
+	ID    string `json:"id,omitempty"`
+	Email string `json:"email,omitempty"`
+	Error string `json:"error,omitempty"`
+}

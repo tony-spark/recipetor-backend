@@ -12,8 +12,6 @@ jobs:
     services:
       mongo-dev:
         image: mongo:6
-        ports:
-          - "27017:27017"
         env:
           MONGO_INITDB_ROOT_USERNAME: dev
           MONGO_INITDB_ROOT_PASSWORD: dev
@@ -47,13 +45,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Build & run user-service binary
+      - name: Build user-service binary
         run: |
           cd user-service
           go build -o ../bin/user-srv cmd/user-srv/main.go
 
-      - name: Run test suite
+      - name: Run services & test suite
         run: |
-          ./bin/user-srv --mongo-dsn=mongodb://dev:dev@localhost:27017/users?authSource=admin --mongo-db=users --kafka-brokers=localhost:29092 &
+          ./bin/user-srv --mongo-dsn=mongodb://dev:dev@mongo-dev:27017/users?authSource=admin --mongo-db=users --kafka-brokers=kafka:9092 &
           cd integration-tests
           go test -v ./cmd/test-client/

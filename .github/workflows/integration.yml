@@ -4,22 +4,61 @@ on:
   push:
 
 jobs:
-  it-with-docker:
+  integration:
     timeout-minutes: 10
     runs-on: ubuntu-latest
+    container: golang:1.19
+
+    services:
+      mongo-dev:
+        image: mongo:6
+        ports:
+          - "27017:27017"
+        env:
+          MONGO_INITDB_ROOT_USERNAME: dev
+          MONGO_INITDB_ROOT_PASSWORD: dev
+
+      zookeeper:
+        image: confluentinc/cp-zookeeper:7.3.0
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+
+      kafka:
+        image: confluentinc/cp-kafka:7.3.0
+        ports:
+          - "29092:29092"
+        env:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+        depends_on:
+          - zookeeper
+
+      kafka-create-topics:
+        image: confluentinc/cp-kafka:7.3.0
+        entrypoint: [ '/bin/sh' ]
+        volumes:
+          - ./create-topics.sh:/usr/bin/create-topics.sh
+        command: create-topics.sh
+        depends_on:
+          - kafka
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Start containers
-        run: docker-compose up -d --build
+      - name: Build & run user-service binary
+        run: |
+          cd user-service
+          go build -o ../bin/user-srv cmd/user-srv/main.go
+          cd ..
+          ./bin/user-srv --mongo-dsn=mongodb://dev:dev@localhost:27017/users?authSource=admin --mongo-db=users --kafka-brokers=localhost:29092 &
 
       - name: Run test suite
         run: |
           cd integration-tests
           go test -v ./cmd/test-client/
-
-      - name: Stop containers
-        if: always()
-        run: docker-compose down

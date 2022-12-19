@@ -16,11 +16,15 @@ type config struct {
 		DSN string `env:"MONGO_DSN"`
 		DB  string `env:"MONGO_DB"`
 	}
+	Kafka struct {
+		Brokers string `env:"KAFKA_BROKERS"`
+	}
 }
 
 func Parse() error {
-	flag.StringVar(&Config.Mongo.DSN, "d", "", "mongodb connection string")
-	flag.StringVar(&Config.Mongo.DB, "n", "", "mongodb database name")
+	flag.StringVar(&Config.Mongo.DSN, "mongo-dsn", "", "mongodb connection string")
+	flag.StringVar(&Config.Mongo.DB, "mongo-db", "", "mongodb database name")
+	flag.StringVar(&Config.Kafka.Brokers, "kafka-brokers", "", "kafka broker list")
 	flag.Parse()
 
 	err := env.Parse(&Config)

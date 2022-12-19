@@ -33,8 +33,7 @@ func main() {
 
 	userService := service.NewService(stor)
 
-	// TODO: move to config
-	controller, err := kafka.NewController(userService, "localhost:29092")
+	controller, err := kafka.NewController(userService, config.Config.Kafka.Brokers)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to initialize kafka controller")
 	}

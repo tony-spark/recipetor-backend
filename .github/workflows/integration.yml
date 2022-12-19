@@ -51,10 +51,9 @@ jobs:
         run: |
           cd user-service
           go build -o ../bin/user-srv cmd/user-srv/main.go
-          cd ..
-          ./bin/user-srv --mongo-dsn=mongodb://dev:dev@localhost:27017/users?authSource=admin --mongo-db=users --kafka-brokers=localhost:29092 &
 
       - name: Run test suite
         run: |
+          ./bin/user-srv --mongo-dsn=mongodb://dev:dev@localhost:27017/users?authSource=admin --mongo-db=users --kafka-brokers=localhost:29092 &
           cd integration-tests
           go test -v ./cmd/test-client/

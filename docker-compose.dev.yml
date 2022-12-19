@@ -1,0 +1,74 @@
+version: '3'
+
+services:
+  mongo-dev:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: dev
+      MONGO_INITDB_ROOT_PASSWORD: dev
+
+  mongo-express:
+    image: mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: dev
+      ME_CONFIG_MONGODB_ADMINPASSWORD: dev
+      ME_CONFIG_MONGODB_URL: mongodb://dev:dev@mongo-dev:27017/
+    depends_on:
+      - mongo-dev
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "22181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+
+  kafka-create-topics:
+    image: confluentinc/cp-kafka:7.3.0
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      echo 'Waiting for kafka'
+      echo 'Current topics:'
+      kafka-topics --bootstrap-server kafka:9092 --list
+      
+      echo 'Creating kafka topics (if necessary)'
+      topics='user.registration.req user.login.req user.info.req user.registrations user.logins user.infos'
+      for topic in $topics; do
+          kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic $topic --replication-factor 1 --partitions 1
+      done
+      
+      echo 'Topic list:'
+      kafka-topics --bootstrap-server kafka:9092 --list
+      "
+    depends_on:
+      - kafka
+
+  kouncil:
+    image: consdata/kouncil:latest
+    ports:
+      - "8080:8080"
+    environment:
+      bootstrapServers: kafka:9092
+    depends_on:
+      - kafka

@@ -36,12 +36,12 @@ jobs:
           KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-      kafka-create-topics:
-        image: confluentinc/cp-kafka:7.3.0
-        entrypoint: [ '/bin/sh' ]
-        volumes:
-          - ./create-topics.sh:/usr/bin/create-topics.sh
-        command: create-topics.sh
+#      kafka-create-topics:
+#        image: confluentinc/cp-kafka:7.3.0
+#        entrypoint: [ '/bin/sh' ]
+#        volumes:
+#          - ./create-topics.sh:/usr/bin/create-topics.sh
+#        command: create-topics.sh
 
     steps:
       - name: Checkout

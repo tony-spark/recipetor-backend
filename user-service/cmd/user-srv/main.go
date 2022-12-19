@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"github.com/tony-spark/recipetor-backend/user-service/internal/controller/kafka"
 	"os"
 	"os/signal"
@@ -15,7 +17,7 @@ import (
 )
 
 func main() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339})
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339Nano})
 	log.Info().Msg("starting user service")
 
 	err := config.Parse()
@@ -36,10 +38,13 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to initialize kafka controller")
 	}
+	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
-		err := controller.Run()
+		err := controller.Run(ctx)
 		if err != nil {
-			log.Fatal().Err(err).Msg("error running controller")
+			if !errors.Is(err, context.Canceled) {
+				log.Fatal().Err(err).Msg("error running controller")
+			}
 		}
 	}()
 
@@ -47,9 +52,11 @@ func main() {
 	signal.Notify(terminateSignal, syscall.SIGINT, syscall.SIGTERM)
 
 	<-terminateSignal
+	cancel()
 	err = controller.Stop()
 	if err != nil {
 		log.Fatal().Err(err).Msg("controller failed to stop properly")
 	}
+
 	log.Info().Msg("user service interrupted via system signal")
 }

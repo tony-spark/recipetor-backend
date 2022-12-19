@@ -44,23 +44,10 @@ services:
 
   kafka-create-topics:
     image: confluentinc/cp-kafka:7.3.0
-    entrypoint: [ '/bin/sh', '-c' ]
-    command: |
-      "
-      # blocks until kafka is reachable
-      echo 'Waiting for kafka'
-      echo 'Current topics:'
-      kafka-topics --bootstrap-server kafka:9092 --list
-      
-      echo 'Creating kafka topics (if necessary)'
-      topics='user.registration.req user.login.req user.info.req user.registrations user.logins user.infos'
-      for topic in $topics; do
-          kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic $topic --replication-factor 1 --partitions 1
-      done
-      
-      echo 'Topic list:'
-      kafka-topics --bootstrap-server kafka:9092 --list
-      "
+    entrypoint: [ '/bin/sh' ]
+    volumes:
+      - ./create-topics.sh:/usr/bin/create-topics.sh
+    command: create-topics.sh
     depends_on:
       - kafka
 

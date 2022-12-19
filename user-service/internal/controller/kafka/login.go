@@ -60,8 +60,8 @@ func (w LoginWorker) Process(ctx context.Context) error {
 		}
 		cancel()
 
-		log.Info().Msgf("sent UserLoginDTO: %+v", userLoginDTO)
 		write(w.loginsWriter, loginDTO.Email, userLoginDTO)
+		log.Info().Msgf("sent UserLoginDTO: %+v", userLoginDTO)
 	}
 }
 

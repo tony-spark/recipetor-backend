@@ -61,8 +61,8 @@ func (w RegistrationWorker) Process(ctx context.Context) error {
 		}
 		cancel()
 
-		log.Info().Msgf("sent UserRegistrationDTO: %+v", registrationDTO)
 		write(w.registrationsWriter, dto.Email, registrationDTO)
+		log.Info().Msgf("sent UserRegistrationDTO: %+v", registrationDTO)
 	}
 }
 

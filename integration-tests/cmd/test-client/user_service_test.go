@@ -3,13 +3,16 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"io"
+	"log"
+	"time"
+
+	"github.com/hashicorp/go-multierror"
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"github.com/tony-spark/recipetor-backend/integration-tests/internal/random"
-	"log"
-	"time"
 )
 
 const (
@@ -64,13 +67,8 @@ func (suite *UserServiceSuite) SetupSuite() {
 }
 
 func (suite *UserServiceSuite) TearDownSuite() {
-	err := suite.registrationsWriter.Close()
-	assert.NoError(suite.T(), err)
-	err = suite.registrationsReader.Close()
-	assert.NoError(suite.T(), err)
-	err = suite.loginsWriter.Close()
-	assert.NoError(suite.T(), err)
-	err = suite.loginsReader.Close()
+	err := closeAll(suite.registrationsReader, suite.registrationsWriter,
+		suite.loginsReader, suite.loginsWriter)
 	assert.NoError(suite.T(), err)
 }
 
@@ -84,13 +82,13 @@ func (suite *UserServiceSuite) TestUserService() {
 			defer cancel()
 			for {
 				message, err := suite.registrationsReader.ReadMessage(ctx)
+				if string(message.Key) != registerDTO.Email {
+					continue
+				}
 				require.NoError(suite.T(), err, "ошибка при чтении сообщения")
 				var registrationDTO UserRegistrationDTO
 				err = json.Unmarshal(message.Value, &registrationDTO)
 				require.NoError(suite.T(), err, "ошибка при раскодировании сообщения")
-				if registrationDTO.Email != registerDTO.Email {
-					continue
-				}
 				assert.Empty(suite.T(), registrationDTO.Error)
 				assert.NotEmpty(suite.T(), registrationDTO.ID)
 				break
@@ -134,16 +132,25 @@ func newReader(brokers []string, topic string) *kafka.Reader {
 		Brokers:          brokers,
 		Topic:            topic,
 		GroupID:          "test-client" + topic,
-		MaxWait:          2 * time.Second,
+		MaxWait:          1 * time.Second,
 		ReadBatchTimeout: 2 * time.Second,
-		MinBytes:         10,
-		MaxBytes:         1024 * 1024,
 	}
 	err := config.Validate()
 	if err != nil {
 		log.Println(err)
 	}
 	return kafka.NewReader(config)
+}
+
+func closeAll(closers ...io.Closer) error {
+	var result error
+	for _, closer := range closers {
+		err := closer.Close()
+		if err != nil {
+			result = multierror.Append(result, err)
+		}
+	}
+	return result
 }
 
 func (suite *UserServiceSuite) write(writer *kafka.Writer, key string, msg interface{}) {

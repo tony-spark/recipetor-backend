@@ -12,16 +12,21 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-func logf(msg string, a ...interface{}) {
+func logdf(msg string, a ...interface{}) {
 	log.Debug().Msgf(msg, a...)
+}
+
+func logef(msg string, a ...interface{}) {
+	log.Error().Msgf(msg, a...)
 }
 
 func newReader(brokers []string, group string, topic string) (*kafka.Reader, error) {
 	config := kafka.ReaderConfig{
-		Brokers: brokers,
-		Topic:   topic,
-		GroupID: group,
-		Logger:  kafka.LoggerFunc(logf),
+		Brokers:     brokers,
+		Topic:       topic,
+		GroupID:     group,
+		Logger:      kafka.LoggerFunc(logdf),
+		ErrorLogger: kafka.LoggerFunc(logef),
 	}
 	err := config.Validate()
 	if err != nil {
@@ -32,16 +37,15 @@ func newReader(brokers []string, group string, topic string) (*kafka.Reader, err
 
 func newWriter(brokers []string, topic string) *kafka.Writer {
 	return &kafka.Writer{
-		Addr:     kafka.TCP(brokers...),
-		Topic:    topic,
-		Balancer: &kafka.LeastBytes{},
-		Logger:   kafka.LoggerFunc(logf),
+		Addr:        kafka.TCP(brokers...),
+		Topic:       topic,
+		Balancer:    &kafka.LeastBytes{},
+		Logger:      kafka.LoggerFunc(logdf),
+		ErrorLogger: kafka.LoggerFunc(logef),
 	}
 }
 
 func readDTO(ctx context.Context, reader *kafka.Reader, obj interface{}) error {
-	// cntx, cancel := context.WithTimeout(ctx, 1*time.Second)
-	// defer cancel()
 	m, err := reader.ReadMessage(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("error receiving message")
@@ -62,7 +66,7 @@ func write(writer *kafka.Writer, key string, msg interface{}) {
 
 	bs, err := json.Marshal(msg)
 	if err != nil {
-		log.Error().Err(err).Msg("failed marshal outcoming message")
+		log.Error().Err(err).Msg("failed to marshal outcoming message")
 		return
 	}
 

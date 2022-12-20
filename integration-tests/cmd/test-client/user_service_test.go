@@ -58,6 +58,8 @@ type UserServiceSuite struct {
 func (suite *UserServiceSuite) SetupSuite() {
 	suite.Require().NotEmpty(flagKafkaBroker, "--kafka-broker flag required")
 
+	createTopics(flagKafkaBroker, TopicRegistrationReq, TopicRegistrations, TopicLoginReq, TopicLogins)
+
 	suite.registrationsWriter = newWriter([]string{flagKafkaBroker}, TopicRegistrationReq)
 	suite.registrationsReader = newReader([]string{flagKafkaBroker}, TopicRegistrations)
 	suite.loginsWriter = newWriter([]string{flagKafkaBroker}, TopicLoginReq)

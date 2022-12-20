@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"io"
 	"log"
+	"net"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -59,4 +61,38 @@ func write(t *testing.T, writer *kafka.Writer, key string, msg interface{}) {
 	})
 
 	require.NoError(t, err, "не удалось записать сообщение")
+}
+
+func createTopics(broker string, topics ...string) {
+	conn, err := kafka.Dial("tcp", broker)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer conn.Close()
+
+	controller, err := conn.Controller()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	controllerConn, err := kafka.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer controllerConn.Close()
+
+	for _, topic := range topics {
+		err := controllerConn.CreateTopics(kafka.TopicConfig{
+			Topic:             topic,
+			NumPartitions:     1,
+			ReplicationFactor: 1,
+		})
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	}
 }

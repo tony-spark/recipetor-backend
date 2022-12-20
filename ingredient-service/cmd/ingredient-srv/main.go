@@ -24,6 +24,11 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("could not load config")
 	}
+	logLevel, err := zerolog.ParseLevel(config.Config.LogLevel)
+	if err != nil {
+		log.Fatal().Err(err).Msg("unknown log level")
+	}
+	log.Logger.Level(logLevel)
 
 	stor, err := mongodb.NewStorage(config.Config.Mongo.DSN, config.Config.Mongo.DB)
 	if err != nil {

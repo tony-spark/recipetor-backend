@@ -3,11 +3,8 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"io"
-	"log"
 	"time"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -77,7 +74,7 @@ func (suite *UserServiceSuite) TearDownSuite() {
 func (suite *UserServiceSuite) TestUserService() {
 	suite.Run("user registration and login", func() {
 		registerDTO := suite.randomCreateUser()
-		suite.write(suite.registrationsWriter, registerDTO.Email, registerDTO)
+		write(suite.T(), suite.registrationsWriter, registerDTO.Email, registerDTO)
 
 		{
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -98,7 +95,7 @@ func (suite *UserServiceSuite) TestUserService() {
 		}
 
 		var loginDTO = registerDTO
-		suite.write(suite.loginsWriter, loginDTO.Email, loginDTO)
+		write(suite.T(), suite.loginsWriter, loginDTO.Email, loginDTO)
 
 		{
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -119,55 +116,6 @@ func (suite *UserServiceSuite) TestUserService() {
 		}
 
 	})
-}
-
-func newWriter(brokers []string, topic string) *kafka.Writer {
-	return &kafka.Writer{
-		Addr:     kafka.TCP(brokers...),
-		Topic:    topic,
-		Balancer: &kafka.LeastBytes{},
-	}
-}
-
-func newReader(brokers []string, topic string) *kafka.Reader {
-	config := kafka.ReaderConfig{
-		Brokers:          brokers,
-		Topic:            topic,
-		GroupID:          "test-client" + topic,
-		MaxWait:          1 * time.Second,
-		ReadBatchTimeout: 2 * time.Second,
-	}
-	err := config.Validate()
-	if err != nil {
-		log.Println(err)
-	}
-	return kafka.NewReader(config)
-}
-
-func closeAll(closers ...io.Closer) error {
-	var result error
-	for _, closer := range closers {
-		err := closer.Close()
-		if err != nil {
-			result = multierror.Append(result, err)
-		}
-	}
-	return result
-}
-
-func (suite *UserServiceSuite) write(writer *kafka.Writer, key string, msg interface{}) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	bs, err := json.Marshal(msg)
-	require.NoError(suite.T(), err)
-
-	err = writer.WriteMessages(ctx, kafka.Message{
-		Key:   []byte(key),
-		Value: bs,
-	})
-
-	require.NoError(suite.T(), err, "не удалось записать сообщение")
 }
 
 func (suite *UserServiceSuite) randomCreateUser() CreateUserDTO {

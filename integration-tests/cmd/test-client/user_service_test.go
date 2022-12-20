@@ -59,10 +59,12 @@ type UserServiceSuite struct {
 }
 
 func (suite *UserServiceSuite) SetupSuite() {
-	suite.registrationsWriter = newWriter([]string{"localhost:29092"}, TopicRegistrationReq)
-	suite.registrationsReader = newReader([]string{"localhost:29092"}, TopicRegistrations)
-	suite.loginsWriter = newWriter([]string{"localhost:29092"}, TopicLoginReq)
-	suite.loginsReader = newReader([]string{"localhost:29092"}, TopicLogins)
+	suite.Require().NotEmpty(flagKafkaBroker, "--kafka-broker flag required")
+
+	suite.registrationsWriter = newWriter([]string{flagKafkaBroker}, TopicRegistrationReq)
+	suite.registrationsReader = newReader([]string{flagKafkaBroker}, TopicRegistrations)
+	suite.loginsWriter = newWriter([]string{flagKafkaBroker}, TopicLoginReq)
+	suite.loginsReader = newReader([]string{flagKafkaBroker}, TopicLogins)
 	suite.generator = random.NewRandomGenerator()
 }
 

@@ -13,6 +13,7 @@ var (
 type Generator interface {
 	RandomString(length int) string
 	RandomEmail() string
+	RandomFloat(max float64) float64
 }
 
 type generator struct {
@@ -40,4 +41,8 @@ func (g generator) RandomString(length int) string {
 
 func (g generator) RandomEmail() string {
 	return g.randomString(lowercaseLetters, 8) + "@test.com"
+}
+
+func (g generator) RandomFloat(max float64) float64 {
+	return g.r.Float64() * max
 }

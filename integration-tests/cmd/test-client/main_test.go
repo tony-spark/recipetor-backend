@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/stretchr/testify/suite"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 func TestMain(m *testing.M) {
@@ -12,4 +13,8 @@ func TestMain(m *testing.M) {
 
 func TestUserService(t *testing.T) {
 	suite.Run(t, new(UserServiceSuite))
+}
+
+func TestIngredientsService(t *testing.T) {
+	suite.Run(t, new(IngredientServiceSuite))
 }

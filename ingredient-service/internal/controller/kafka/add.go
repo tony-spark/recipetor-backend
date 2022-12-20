@@ -52,6 +52,7 @@ func (w AddIngredientWorker) Process(ctx context.Context) error {
 		id, err := w.ingredientService.Create(cntx, dto)
 		ingredientDTO := ingredient.IngredientDTO{
 			Name: dto.Name,
+			ID:   id,
 		}
 		cancel()
 		if err != nil {

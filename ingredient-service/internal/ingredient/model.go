@@ -19,3 +19,16 @@ type CreateIngredientDTO struct {
 	BaseUnit       string          `json:"base_unit"`
 	NutritionFacts *NutritionFacts `json:"nutrition_facts,omitempty"`
 }
+
+type IngredientDTO struct {
+	Ingredient Ingredient `json:"ingredient,omitempty"`
+	Name       string     `json:"name,omitempty"`
+	ID         string     `json:"ingredient_id,omitempty"`
+	NameQuery  string     `json:"name_query,omitempty"`
+	Error      string     `json:"error,omitempty"`
+}
+
+type FindIngredientsDTO struct {
+	ID        string `json:"ingredient_id,omitempty"`
+	NameQuery string `json:"name_query,omitempty"`
+}

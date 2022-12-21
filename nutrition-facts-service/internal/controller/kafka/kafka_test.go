@@ -98,7 +98,7 @@ func (suite *ControllerTestSuite) TestController() {
 			for {
 				select {
 				case <-ctx.Done():
-					break
+					return
 				default:
 				}
 
@@ -125,30 +125,22 @@ func (suite *ControllerTestSuite) TestController() {
 		{
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
-			for {
-				select {
-				case <-ctx.Done():
-					break
-				default:
-				}
 
-				var dto nutrition.RecipeNutritionsDTO
-				err := readDTO(ctx, suite.nutritionFactsReader, &dto)
-				suite.Assert().NoError(err)
+			var dto nutrition.RecipeNutritionsDTO
+			err := readDTO(ctx, suite.nutritionFactsReader, &dto)
+			suite.Assert().NoError(err)
 
-				suite.Assert().Equal(recipeDTO.Recipe.ID, dto.RecipeID)
-				suite.Assert().Equal(nutrition.RecipeNutritionsDTO{
-					RecipeID: "1",
-					NutritionFacts: nutrition.NutritionFacts{
-						Calories:      15*1 + 65*0.5 + 50,
-						Proteins:      15*0.5 + 5,
-						Fats:          15*0.3 + 65*0.8 + 10,
-						Carbohydrates: 15*0.1 + 65*0.4 + 15,
-					},
-					Inaccurate: false,
-				}, dto)
-				break
-			}
+			suite.Assert().Equal(recipeDTO.Recipe.ID, dto.RecipeID)
+			suite.Assert().Equal(nutrition.RecipeNutritionsDTO{
+				RecipeID: "1",
+				NutritionFacts: nutrition.NutritionFacts{
+					Calories:      15*1 + 65*0.5 + 50,
+					Proteins:      15*0.5 + 5,
+					Fats:          15*0.3 + 65*0.8 + 10,
+					Carbohydrates: 15*0.1 + 65*0.4 + 15,
+				},
+				Inaccurate: false,
+			}, dto)
 
 		}
 	})

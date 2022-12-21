@@ -162,6 +162,10 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	}
 
 	var err error
+
+	err = createTopics(kafkaBroker, TopicIngredients, TopicRecipes, TopicIngredientsReq, TopicNutritionFacts)
+	suite.Require().NoError(err)
+
 	suite.controller, err = NewController(service.NewService(), kafkaBroker)
 	suite.Require().NoError(err)
 

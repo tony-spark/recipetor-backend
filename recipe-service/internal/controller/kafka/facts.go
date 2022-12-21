@@ -69,7 +69,7 @@ func (w RecipeNutritionFactsWorker) Process(ctx context.Context) error {
 			log.Error().Err(err).Msg("could not update recipe's nutrition facts")
 			continue
 		}
-		log.Info().Msgf("updated with UpdateRecipeDTO: +v", updateRecipeDTO)
+		log.Info().Msgf("updated with UpdateRecipeDTO: %+v", updateRecipeDTO)
 
 		cancel()
 	}

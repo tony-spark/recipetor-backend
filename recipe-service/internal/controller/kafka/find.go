@@ -90,6 +90,7 @@ func (w FindRecipesWorker) Process(ctx context.Context) error {
 
 		if len(dto.IngredientIDs) > 0 {
 			// TODO: implement
+			panic("Implement me")
 		}
 	}
 }

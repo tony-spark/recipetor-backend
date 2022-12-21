@@ -131,7 +131,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 }
 
 func (suite *ControllerTestSuite) TearDownSuite() {
-	err := closeAll()
+	err := closeAll(suite.ingredientsReader, suite.newIngredientWriter, suite.reqIngredientsWriter)
 	suite.Assert().NoError(err)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

@@ -12,13 +12,6 @@ import (
 	"github.com/tony-spark/recipetor-backend/integration-tests/internal/random"
 )
 
-const (
-	TopicRegistrationReq = "user.registration.req"
-	TopicLoginReq        = "user.login.req"
-	TopicRegistrations   = "user.registrations"
-	TopicLogins          = "user.logins"
-)
-
 type UserServiceSuite struct {
 	suite.Suite
 

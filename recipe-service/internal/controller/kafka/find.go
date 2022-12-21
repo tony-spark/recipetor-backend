@@ -64,6 +64,7 @@ func (w FindRecipesWorker) Process(ctx context.Context) error {
 			}
 
 			write(w.recipeWriter, dto.ID, recipeDTO)
+			log.Info().Msgf("sent RecipeDTO: %+v", recipeDTO)
 		}
 
 		if len(dto.UserID) > 0 {

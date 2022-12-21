@@ -8,12 +8,14 @@ import (
 var (
 	letters          = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	lowercaseLetters = []rune("abcdefghijklmnopqrstuvwxyz")
+	hexSymbols       = []rune("0123456789abcdef")
 )
 
 type Generator interface {
 	RandomString(length int) string
 	RandomEmail() string
 	RandomFloat(max float64) float64
+	RandomObjectID() string
 }
 
 type generator struct {
@@ -45,4 +47,8 @@ func (g generator) RandomEmail() string {
 
 func (g generator) RandomFloat(max float64) float64 {
 	return g.r.Float64() * max
+}
+
+func (g generator) RandomObjectID() string {
+	return g.randomString(hexSymbols, 24)
 }

@@ -56,18 +56,20 @@ func (w RecipeNutritionFactsWorker) Process(ctx context.Context) error {
 
 		recip.NutritionFacts = &dto.NutritionFacts
 
-		err = w.recipeService.Update(cntx, recipe.UpdateRecipeDTO{
+		updateRecipeDTO := recipe.UpdateRecipeDTO{
 			ID:             recip.ID,
 			Name:           recip.Name,
 			Ingredients:    recip.Ingredients,
 			Steps:          recip.Steps,
 			NutritionFacts: recip.NutritionFacts,
-		})
+		}
+		err = w.recipeService.Update(cntx, updateRecipeDTO)
 		if err != nil {
 			cancel()
 			log.Error().Err(err).Msg("could not update recipe's nutrition facts")
 			continue
 		}
+		log.Info().Msgf("updated with UpdateRecipeDTO: +v", updateRecipeDTO)
 
 		cancel()
 	}

@@ -11,12 +11,6 @@ import (
 	"time"
 )
 
-const (
-	TopicIngredientsNew = "ingredients.new"
-	TopicIngredientsReq = "ingredients.req"
-	TopicIngredients    = "ingredients"
-)
-
 type IngredientServiceSuite struct {
 	suite.Suite
 

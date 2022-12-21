@@ -18,3 +18,7 @@ func TestUserService(t *testing.T) {
 func TestIngredientsService(t *testing.T) {
 	suite.Run(t, new(IngredientServiceSuite))
 }
+
+func TestRecipeService(t *testing.T) {
+	suite.Run(t, new(RecipeServiceSuite))
+}

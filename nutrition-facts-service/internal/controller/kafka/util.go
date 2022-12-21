@@ -94,7 +94,15 @@ func closeAll(closers ...io.Closer) error {
 }
 
 func createTopics(broker string, topics ...string) error {
-	conn, err := kafka.Dial("tcp", broker)
+	var conn *kafka.Conn
+	var err error
+	for i := 0; i < 5; i++ {
+		conn, err = kafka.Dial("tcp", broker)
+		if err == nil {
+			break
+		}
+		time.Sleep(3 * time.Second)
+	}
 	if err != nil {
 		return err
 	}

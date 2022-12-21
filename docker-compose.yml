@@ -58,6 +58,7 @@ services:
     environment:
       MONGO_DSN: mongodb://admin:admin@ingredient-service-db:27017/ingredients?authSource=admin
       MONGO_DB: ingredients
+      KAFKA_BROKERS: kafka:9092
     depends_on:
       - ingredient-service-db
 
@@ -73,6 +74,7 @@ services:
     environment:
       MONGO_DSN: mongodb://admin:admin@recipe-service-db:27017/recipes?authSource=admin
       MONGO_DB: recipes
+      KAFKA_BROKERS: kafka:9092
     depends_on:
       - recipe-service-db
 

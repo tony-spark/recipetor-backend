@@ -69,7 +69,7 @@ func (w RecipeWorker) Stop() error {
 }
 
 func (w RecipeWorker) processRecipe(ctx context.Context, recipe nutrition.Recipe) {
-	var ingredients map[string]nutrition.Ingredient
+	ingredients := make(map[string]nutrition.Ingredient, 0)
 	// TODO: process asynchronously or add bulk get API to ingredients-service
 	for _, ingredient := range recipe.Ingredients {
 		dto := nutrition.FindIngredientsDTO{
@@ -77,6 +77,7 @@ func (w RecipeWorker) processRecipe(ctx context.Context, recipe nutrition.Recipe
 		}
 
 		write(w.reqIngredientsWriter, dto.ID, dto)
+		log.Info().Msgf("sent FindIngredientsDTO: %+v", dto)
 
 		for {
 			select {
@@ -92,6 +93,7 @@ func (w RecipeWorker) processRecipe(ctx context.Context, recipe nutrition.Recipe
 				}
 				continue
 			}
+			log.Info().Msgf("got IngredientDTO: %+v", ingredientDTO)
 			if dto.ID != ingredientDTO.ID {
 				continue
 			}
@@ -101,6 +103,7 @@ func (w RecipeWorker) processRecipe(ctx context.Context, recipe nutrition.Recipe
 				return
 			}
 			ingredients[ingredientDTO.ID] = ingredientDTO.Ingredient
+			break
 		}
 
 	}
@@ -112,4 +115,5 @@ func (w RecipeWorker) processRecipe(ctx context.Context, recipe nutrition.Recipe
 	}
 
 	write(w.nutritionFactsWriter, recipeNutritionsDTO.RecipeID, recipeNutritionsDTO)
+	log.Info().Msgf("sent RecipeNutritionsDTO: %+v", recipeNutritionsDTO)
 }

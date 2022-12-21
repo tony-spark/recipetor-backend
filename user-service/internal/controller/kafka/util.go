@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/rs/zerolog/log"
 	"io"
+	"net"
+	"strconv"
 	"time"
 
 	"github.com/segmentio/kafka-go"
@@ -89,4 +91,44 @@ func closeAll(closers ...io.Closer) error {
 		}
 	}
 	return result
+}
+
+func createTopics(broker string, topics ...string) error {
+	var conn *kafka.Conn
+	var err error
+	for i := 0; i < 5; i++ {
+		conn, err = kafka.Dial("tcp", broker)
+		if err == nil {
+			break
+		}
+		time.Sleep(3 * time.Second)
+	}
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	controller, err := conn.Controller()
+	if err != nil {
+		return err
+	}
+
+	controllerConn, err := kafka.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
+	if err != nil {
+		return err
+	}
+	defer controllerConn.Close()
+
+	for _, topic := range topics {
+		err := controllerConn.CreateTopics(kafka.TopicConfig{
+			Topic:             topic,
+			NumPartitions:     1,
+			ReplicationFactor: 1,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

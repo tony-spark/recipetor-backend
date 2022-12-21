@@ -55,6 +55,22 @@ jobs:
           MONGO_INITDB_ROOT_USERNAME: test
           MONGO_INITDB_ROOT_PASSWORD: test
 
+      zookeeper:
+        image: confluentinc/cp-zookeeper:7.3.0
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+
+      kafka:
+        image: confluentinc/cp-kafka:7.3.0
+        env:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -62,6 +78,7 @@ jobs:
       - name: Run tests
         env:
           TEST_MONGO_DSN: mongodb://test:test@mongo-test-db:27017/test?authSource=admin
+          TEST_KAFKA_BROKERS: kafka:9092
         run: |
           cd ingredient-service
           go test -v -cover ./...

@@ -106,6 +106,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		suite.Require().NoError(err)
 
 		suite.controller, err = NewController(service.NewService(stor), kafkaBroker)
+		suite.Require().NoError(err)
 	}
 
 	suite.registrationsReader, err = newReader([]string{kafkaBroker}, "user-service-test-registrations", TopicRegistrations)

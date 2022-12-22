@@ -40,15 +40,15 @@ type ControllerTestSuite struct {
 func (suite *ControllerTestSuite) TestController() {
 	suite.Run("user registration and login", func() {
 		registerDTO := suite.randomCreateUser()
-		corId := generateCorrelationID()
-		write(suite.registrationsWriter, registerDTO.Email, registerDTO, corId)
+		corID := generateCorrelationID()
+		write(suite.registrationsWriter, registerDTO.Email, registerDTO, corID)
 
 		{
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
 			for {
 				message, err := suite.registrationsReader.ReadMessage(ctx)
-				if !checkCorrelationID(message, corId) {
+				if !checkCorrelationID(message, corID) {
 					continue
 				}
 				require.NoError(suite.T(), err, "ошибка при чтении сообщения")
@@ -62,7 +62,7 @@ func (suite *ControllerTestSuite) TestController() {
 		}
 
 		var loginDTO = registerDTO
-		write(suite.loginsWriter, loginDTO.Email, loginDTO, corId)
+		write(suite.loginsWriter, loginDTO.Email, loginDTO, corID)
 
 		{
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -73,7 +73,7 @@ func (suite *ControllerTestSuite) TestController() {
 				var userLoginDTO user.UserLoginDTO
 				err = json.Unmarshal(message.Value, &userLoginDTO)
 				require.NoError(suite.T(), err, "ошибка при раскодировании сообщения")
-				if !checkCorrelationID(message, corId) {
+				if !checkCorrelationID(message, corID) {
 					continue
 				}
 				assert.Empty(suite.T(), userLoginDTO.Error)

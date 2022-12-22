@@ -48,7 +48,7 @@ func (w RecipeWorker) Process(ctx context.Context) error {
 		}
 
 		var dto nutrition.RecipeDTO
-		err := readDTO(ctx, w.recipeReader, &dto)
+		_, err := readDTO(ctx, w.recipeReader, &dto)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				return err
@@ -75,8 +75,9 @@ func (w RecipeWorker) processRecipe(ctx context.Context, recipe nutrition.Recipe
 		dto := nutrition.FindIngredientsDTO{
 			ID: ingredient.IngredientID,
 		}
+		corID := generateCorrelationID()
 
-		write(w.reqIngredientsWriter, dto.ID, dto)
+		write(w.reqIngredientsWriter, dto.ID, dto, corID)
 		log.Info().Msgf("sent FindIngredientsDTO: %+v", dto)
 
 		for {
@@ -86,7 +87,7 @@ func (w RecipeWorker) processRecipe(ctx context.Context, recipe nutrition.Recipe
 			default:
 			}
 			var ingredientDTO nutrition.IngredientDTO
-			err := readDTO(ctx, w.ingredientsReader, &ingredientDTO)
+			gotCorID, err := readDTO(ctx, w.ingredientsReader, &ingredientDTO)
 			if err != nil {
 				if errors.Is(err, io.EOF) {
 					return
@@ -94,7 +95,7 @@ func (w RecipeWorker) processRecipe(ctx context.Context, recipe nutrition.Recipe
 				continue
 			}
 			log.Info().Msgf("got IngredientDTO: %+v", ingredientDTO)
-			if dto.ID != ingredientDTO.ID {
+			if gotCorID != corID {
 				continue
 			}
 			if len(ingredientDTO.Error) > 0 {
@@ -114,6 +115,6 @@ func (w RecipeWorker) processRecipe(ctx context.Context, recipe nutrition.Recipe
 		return
 	}
 
-	write(w.nutritionFactsWriter, recipeNutritionsDTO.RecipeID, recipeNutritionsDTO)
+	write(w.nutritionFactsWriter, recipeNutritionsDTO.RecipeID, recipeNutritionsDTO, "")
 	log.Info().Msgf("sent RecipeNutritionsDTO: %+v", recipeNutritionsDTO)
 }

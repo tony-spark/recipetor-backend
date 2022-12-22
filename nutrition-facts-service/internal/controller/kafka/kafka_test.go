@@ -55,7 +55,7 @@ func (suite *ControllerTestSuite) TestController() {
 			ID:     suite.rand.RandomObjectID(),
 			UserID: suite.rand.RandomObjectID(),
 		}
-		write(suite.recipesWriter, recipeDTO.ID, recipeDTO)
+		write(suite.recipesWriter, recipeDTO.ID, recipeDTO, "")
 
 		ingredients := map[string]nutrition.Ingredient{
 			"1": {
@@ -103,7 +103,7 @@ func (suite *ControllerTestSuite) TestController() {
 				}
 
 				var dto nutrition.FindIngredientsDTO
-				err := readDTO(ctx, suite.ingredientsReqReader, &dto)
+				corID, err := readDTO(ctx, suite.ingredientsReqReader, &dto)
 				suite.Require().NoError(err)
 
 				ingr, ok := ingredients[dto.ID]
@@ -112,7 +112,7 @@ func (suite *ControllerTestSuite) TestController() {
 					write(suite.ingredientsWriter, dto.ID, nutrition.IngredientDTO{
 						Ingredient: ingr,
 						ID:         ingr.ID,
-					})
+					}, corID)
 					ingredientsSent++
 					if ingredientsSent == len(recipeDTO.Recipe.Ingredients) {
 						break
@@ -127,7 +127,7 @@ func (suite *ControllerTestSuite) TestController() {
 			defer cancel()
 
 			var dto nutrition.RecipeNutritionsDTO
-			err := readDTO(ctx, suite.nutritionFactsReader, &dto)
+			_, err := readDTO(ctx, suite.nutritionFactsReader, &dto)
 			suite.Assert().NoError(err)
 
 			suite.Assert().Equal(recipeDTO.Recipe.ID, dto.RecipeID)

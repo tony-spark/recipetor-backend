@@ -88,6 +88,7 @@ func (suite *ControllerTestSuite) TestController() {
 				}
 
 				err = json.Unmarshal(message.Value, &gotDTO)
+				require.NoError(suite.T(), err)
 				assert.Empty(suite.T(), gotDTO.Error)
 				assert.Equal(suite.T(), findRecipeDTO.ID, gotDTO.ID)
 				assert.NotEmpty(suite.T(), gotDTO.Recipe)
@@ -127,6 +128,8 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	}
 
 	suite.recipesReader, err = newReader([]string{kafkaBroker}, "recipe-service-test-recipes", TopicRecipes)
+	suite.Require().NoError(err)
+
 	suite.newRecipeWriter = newWriter([]string{kafkaBroker}, TopicRecipesNew)
 	suite.reqRecipeWriter = newWriter([]string{kafkaBroker}, TopicRecipesReq)
 	suite.nutritionFactsWriter = newWriter([]string{kafkaBroker}, TopicNutritionFacts)

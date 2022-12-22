@@ -26,9 +26,8 @@ type ControllerTestSuite struct {
 
 	controller controller.Controller
 
-	newIngredientWriter *kafka.Writer
-	ingredientsReader   *kafka.Reader
-
+	newIngredientWriter  *kafka.Writer
+	ingredientsReader    *kafka.Reader
 	reqIngredientsWriter *kafka.Writer
 
 	rand random.Generator

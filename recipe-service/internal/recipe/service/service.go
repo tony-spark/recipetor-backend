@@ -46,10 +46,11 @@ func (s service) Create(ctx context.Context, dto recipe.CreateRecipeDTO) (string
 
 func (s service) Update(ctx context.Context, dto recipe.UpdateRecipeDTO) error {
 	r := recipe.Recipe{
-		ID:          dto.ID,
-		Name:        dto.Name,
-		Ingredients: dto.Ingredients,
-		Steps:       dto.Steps,
+		ID:             dto.ID,
+		Name:           dto.Name,
+		Ingredients:    dto.Ingredients,
+		Steps:          dto.Steps,
+		NutritionFacts: dto.NutritionFacts,
 	}
 	err := s.storage.Update(ctx, r)
 	if err != nil {

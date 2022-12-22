@@ -9,33 +9,38 @@ import (
 
 func Test_service_CalcRecipeNutritions(t *testing.T) {
 	tests := []struct {
-		name       string
-		recipeDTO  nutrition.RecipeDTO
-		wantResult nutrition.RecipeNutritionsDTO
-		wantErr    bool
+		name        string
+		recipe      nutrition.Recipe
+		ingredients map[string]nutrition.Ingredient
+		wantResult  nutrition.RecipeNutritionsDTO
+		wantErr     bool
 	}{
 		{
 			name: "unsifficient data",
-			recipeDTO: nutrition.RecipeDTO{
-				RecipeID: "1",
+			ingredients: map[string]nutrition.Ingredient{
+				"1": {
+					ID:             "1",
+					BaseUnit:       "г",
+					NutritionFacts: nil,
+				},
+				"2": {
+					ID:             "2",
+					BaseUnit:       "мл",
+					NutritionFacts: nil,
+				},
+			},
+			recipe: nutrition.Recipe{
+				ID: "1",
 				Ingredients: []nutrition.RecipeIngredient{
 					{
-						Ingredient: nutrition.Ingredient{
-							ID:             "1",
-							BaseUnit:       "г",
-							NutritionFacts: nil,
-						},
-						Unit:   "г",
-						Amount: 10,
+						IngredientID: "1",
+						Unit:         "г",
+						Amount:       10,
 					},
 					{
-						Ingredient: nutrition.Ingredient{
-							ID:             "2",
-							BaseUnit:       "мл",
-							NutritionFacts: nil,
-						},
-						Unit:   "мл",
-						Amount: 1000,
+						IngredientID: "2",
+						Unit:         "мл",
+						Amount:       1000,
 					},
 				},
 			},
@@ -44,43 +49,48 @@ func Test_service_CalcRecipeNutritions(t *testing.T) {
 		},
 		{
 			name: "inaccurate result",
-			recipeDTO: nutrition.RecipeDTO{
-				RecipeID: "1",
+			ingredients: map[string]nutrition.Ingredient{
+				"1": {
+					ID:             "1",
+					BaseUnit:       "шт",
+					NutritionFacts: nil,
+				},
+				"2": {
+					ID:       "2",
+					BaseUnit: "г",
+					NutritionFacts: &nutrition.NutritionFacts{
+						Calories:      1,
+						Proteins:      0.5,
+						Fats:          0.3,
+						Carbohydrates: 0.1,
+					},
+				},
+				"3": {
+					ID:       "3",
+					BaseUnit: "мл",
+					NutritionFacts: &nutrition.NutritionFacts{
+						Calories:      0.5,
+						Proteins:      0,
+						Fats:          0.8,
+						Carbohydrates: 0.4,
+					},
+				},
+			},
+			recipe: nutrition.Recipe{
+				ID: "1",
 				Ingredients: []nutrition.RecipeIngredient{
 					{
-						Ingredient: nutrition.Ingredient{
-							ID:             "1",
-							BaseUnit:       "шт",
-							NutritionFacts: nil,
-						},
-						Unit:   "шт",
-						Amount: 1,
+						IngredientID: "1",
+						Unit:         "шт",
+						Amount:       1,
 					}, {
-						Ingredient: nutrition.Ingredient{
-							ID:       "2",
-							BaseUnit: "г",
-							NutritionFacts: &nutrition.NutritionFacts{
-								Calories:      1,
-								Proteins:      0.5,
-								Fats:          0.3,
-								Carbohydrates: 0.1,
-							},
-						},
-						Unit:   "г",
-						Amount: 15,
+						IngredientID: "2",
+						Unit:         "г",
+						Amount:       15,
 					}, {
-						Ingredient: nutrition.Ingredient{
-							ID:       "3",
-							BaseUnit: "мл",
-							NutritionFacts: &nutrition.NutritionFacts{
-								Calories:      0.5,
-								Proteins:      0,
-								Fats:          0.8,
-								Carbohydrates: 0.4,
-							},
-						},
-						Unit:   "мл",
-						Amount: 65,
+						IngredientID: "3",
+						Unit:         "мл",
+						Amount:       65,
 					},
 				},
 			},
@@ -98,48 +108,53 @@ func Test_service_CalcRecipeNutritions(t *testing.T) {
 		},
 		{
 			name: "full result",
-			recipeDTO: nutrition.RecipeDTO{
-				RecipeID: "1",
+			ingredients: map[string]nutrition.Ingredient{
+				"1": {
+					ID:       "1",
+					BaseUnit: "шт",
+					NutritionFacts: &nutrition.NutritionFacts{
+						Calories:      50,
+						Proteins:      5,
+						Fats:          10,
+						Carbohydrates: 15,
+					},
+				},
+				"2": {
+					ID:       "2",
+					BaseUnit: "г",
+					NutritionFacts: &nutrition.NutritionFacts{
+						Calories:      1,
+						Proteins:      0.5,
+						Fats:          0.3,
+						Carbohydrates: 0.1,
+					},
+				},
+				"3": {
+					ID:       "3",
+					BaseUnit: "мл",
+					NutritionFacts: &nutrition.NutritionFacts{
+						Calories:      0.5,
+						Proteins:      0,
+						Fats:          0.8,
+						Carbohydrates: 0.4,
+					},
+				},
+			},
+			recipe: nutrition.Recipe{
+				ID: "1",
 				Ingredients: []nutrition.RecipeIngredient{
 					{
-						Ingredient: nutrition.Ingredient{
-							ID:       "1",
-							BaseUnit: "шт",
-							NutritionFacts: &nutrition.NutritionFacts{
-								Calories:      50,
-								Proteins:      5,
-								Fats:          10,
-								Carbohydrates: 15,
-							},
-						},
-						Unit:   "шт",
-						Amount: 1,
+						IngredientID: "1",
+						Unit:         "шт",
+						Amount:       1,
 					}, {
-						Ingredient: nutrition.Ingredient{
-							ID:       "2",
-							BaseUnit: "г",
-							NutritionFacts: &nutrition.NutritionFacts{
-								Calories:      1,
-								Proteins:      0.5,
-								Fats:          0.3,
-								Carbohydrates: 0.1,
-							},
-						},
-						Unit:   "г",
-						Amount: 15,
+						IngredientID: "2",
+						Unit:         "г",
+						Amount:       15,
 					}, {
-						Ingredient: nutrition.Ingredient{
-							ID:       "3",
-							BaseUnit: "мл",
-							NutritionFacts: &nutrition.NutritionFacts{
-								Calories:      0.5,
-								Proteins:      0,
-								Fats:          0.8,
-								Carbohydrates: 0.4,
-							},
-						},
-						Unit:   "мл",
-						Amount: 65,
+						IngredientID: "3",
+						Unit:         "мл",
+						Amount:       65,
 					},
 				},
 			},
@@ -159,7 +174,7 @@ func Test_service_CalcRecipeNutritions(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
-			gotResult, err := s.CalcRecipeNutritions(tt.recipeDTO)
+			gotResult, err := s.CalcRecipeNutritions(tt.recipe, tt.ingredients)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CalcRecipeNutritions() error = %v, wantErr %v", err, tt.wantErr)
 				return

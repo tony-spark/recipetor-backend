@@ -7,7 +7,7 @@ import (
 )
 
 type Service interface {
-	CalcRecipeNutritions(recipe nutrition.RecipeDTO) (nutrition.RecipeNutritionsDTO, error)
+	CalcRecipeNutritions(recipe nutrition.Recipe, ingredients map[string]nutrition.Ingredient) (nutrition.RecipeNutritionsDTO, error)
 }
 
 type service struct {
@@ -23,17 +23,18 @@ func NewService() Service {
 	}
 }
 
-func (s service) CalcRecipeNutritions(recipe nutrition.RecipeDTO) (result nutrition.RecipeNutritionsDTO, err error) {
+func (s service) CalcRecipeNutritions(recipe nutrition.Recipe, ingredients map[string]nutrition.Ingredient) (result nutrition.RecipeNutritionsDTO, err error) {
 	facts := nutrition.NutritionFacts{}
 	inaccurate := false
 
 	unknown := 0.0
 	for _, ing := range recipe.Ingredients {
-		if ing.Ingredient.NutritionFacts != nil && ing.Unit == ing.Ingredient.BaseUnit { // TODO: unit conversion
-			facts.Calories += ing.Amount * ing.Ingredient.NutritionFacts.Calories
-			facts.Fats += ing.Amount * ing.Ingredient.NutritionFacts.Fats
-			facts.Carbohydrates += ing.Amount * ing.Ingredient.NutritionFacts.Carbohydrates
-			facts.Proteins += ing.Amount * ing.Ingredient.NutritionFacts.Proteins
+		ingredient, ok := ingredients[ing.IngredientID]
+		if ok && ingredient.NutritionFacts != nil && ing.Unit == ingredient.BaseUnit { // TODO: unit conversion
+			facts.Calories += ing.Amount * ingredient.NutritionFacts.Calories
+			facts.Fats += ing.Amount * ingredient.NutritionFacts.Fats
+			facts.Carbohydrates += ing.Amount * ingredient.NutritionFacts.Carbohydrates
+			facts.Proteins += ing.Amount * ingredient.NutritionFacts.Proteins
 		} else {
 			unknown += 1
 		}
@@ -48,7 +49,7 @@ func (s service) CalcRecipeNutritions(recipe nutrition.RecipeDTO) (result nutrit
 	}
 
 	result = nutrition.RecipeNutritionsDTO{
-		RecipeID:       recipe.RecipeID,
+		RecipeID:       recipe.ID,
 		NutritionFacts: facts,
 		Inaccurate:     inaccurate,
 	}

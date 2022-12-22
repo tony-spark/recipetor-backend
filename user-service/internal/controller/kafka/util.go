@@ -104,7 +104,7 @@ func write(writer *kafka.Writer, key string, msg interface{}, correlationID stri
 }
 
 func generateCorrelationID() string {
-	return uuid.New().String()
+	return uuid.NewString()
 }
 
 func checkCorrelationID(msg kafka.Message, correlationID string) bool {

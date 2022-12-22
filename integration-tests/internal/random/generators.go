@@ -22,7 +22,7 @@ type generator struct {
 	r *rand.Rand
 }
 
-func NewRandomGenerator() Generator {
+func NewGenerator() Generator {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return generator{
 		r: r,

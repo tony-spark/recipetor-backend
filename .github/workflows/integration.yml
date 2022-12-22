@@ -53,10 +53,16 @@ jobs:
           cd recipe-service
           go build -o ../bin/recipe-srv cmd/recipe-srv/main.go
 
+      - name: Build nutrition-facts-service binary
+        run: |
+          cd nutrition-facts-service
+          go build -o ../bin/nutrition-facts-srv cmd/nutrition-facts-srv/main.go
+
       - name: Run services & test suite
         run: |
           ./bin/user-srv --mongo-dsn=mongodb://dev:dev@mongo-dev:27017/users?authSource=admin --mongo-db=users --kafka-brokers=kafka:9092 --log-level=error &
           ./bin/ingredient-srv --mongo-dsn=mongodb://dev:dev@mongo-dev:27017/ingredients?authSource=admin --mongo-db=ingredients --kafka-brokers=kafka:9092 --log-level=error &
           ./bin/recipe-srv --mongo-dsn=mongodb://dev:dev@mongo-dev:27017/recipes?authSource=admin --mongo-db=recipes --kafka-brokers=kafka:9092 --log-level=error &
+          ./bin/nutrition-facts-srv --kafka-brokers=kafka:9092 --log-level=error &
           cd integration-tests
           go test -v ./cmd/test-client/ --kafka-broker=kafka:9092

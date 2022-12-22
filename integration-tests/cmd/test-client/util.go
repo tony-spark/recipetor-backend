@@ -3,15 +3,20 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/google/uuid"
 	"github.com/hashicorp/go-multierror"
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/require"
 	"io"
-	"log"
 	"net"
 	"strconv"
 	"testing"
 	"time"
+)
+
+const (
+	KeyCorrelationID = "correlation_id"
 )
 
 func newWriter(brokers []string, topic string) *kafka.Writer {
@@ -22,19 +27,19 @@ func newWriter(brokers []string, topic string) *kafka.Writer {
 	}
 }
 
-func newReader(brokers []string, topic string) *kafka.Reader {
+func newReader(brokers []string, clientID string, topic string) (*kafka.Reader, error) {
 	config := kafka.ReaderConfig{
 		Brokers:          brokers,
 		Topic:            topic,
-		GroupID:          "test-client" + topic,
+		GroupID:          fmt.Sprintf("test.client.%s.%s", clientID, topic),
 		MaxWait:          1 * time.Second,
 		ReadBatchTimeout: 2 * time.Second,
 	}
 	err := config.Validate()
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
-	return kafka.NewReader(config)
+	return kafka.NewReader(config), nil
 }
 
 func closeAll(closers ...io.Closer) error {
@@ -48,39 +53,72 @@ func closeAll(closers ...io.Closer) error {
 	return result
 }
 
-func write(t *testing.T, writer *kafka.Writer, key string, msg interface{}) {
+func readDTO(ctx context.Context, reader *kafka.Reader, obj interface{}) (string, error) {
+	m, err := reader.ReadMessage(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	err = json.Unmarshal(m.Value, obj)
+	if err != nil {
+		return "", err
+	}
+
+	for _, h := range m.Headers {
+		if h.Key == KeyCorrelationID {
+			return string(h.Value), nil
+		}
+	}
+
+	return "", nil
+}
+
+func write(t *testing.T, writer *kafka.Writer, key string, msg interface{}, correlationID string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	bs, err := json.Marshal(msg)
-	require.NoError(t, err)
+	require.NoError(t, err, "не удалось декодировать json")
 
-	err = writer.WriteMessages(ctx, kafka.Message{
+	kmsg := kafka.Message{
 		Key:   []byte(key),
 		Value: bs,
-	})
-
+	}
+	if len(correlationID) > 0 {
+		kmsg.Headers = []kafka.Header{
+			{
+				Key:   KeyCorrelationID,
+				Value: []byte(correlationID),
+			},
+		}
+	}
+	err = writer.WriteMessages(ctx, kmsg)
 	require.NoError(t, err, "не удалось записать сообщение")
 }
 
-func createTopics(broker string, topics ...string) {
-	conn, err := kafka.Dial("tcp", broker)
+func createTopics(broker string, topics ...string) error {
+	var conn *kafka.Conn
+	var err error
+	for i := 0; i < 5; i++ {
+		conn, err = kafka.Dial("tcp", broker)
+		if err == nil {
+			break
+		}
+		time.Sleep(3 * time.Second)
+	}
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 	defer conn.Close()
 
 	controller, err := conn.Controller()
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 
 	controllerConn, err := kafka.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 	defer controllerConn.Close()
 
@@ -91,8 +129,22 @@ func createTopics(broker string, topics ...string) {
 			ReplicationFactor: 1,
 		})
 		if err != nil {
-			log.Println(err)
-			return
+			return err
 		}
 	}
+
+	return nil
+}
+
+func generateCorrelationID() string {
+	return uuid.NewString()
+}
+
+func checkCorrelationID(msg kafka.Message, correlationID string) bool {
+	for _, h := range msg.Headers {
+		if h.Key == KeyCorrelationID {
+			return correlationID == string(h.Value)
+		}
+	}
+	return false
 }

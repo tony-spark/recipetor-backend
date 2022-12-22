@@ -39,7 +39,7 @@ func (w LoginWorker) Process(ctx context.Context) error {
 		}
 
 		var loginDTO user.LoginDTO
-		err := readDTO(ctx, w.loginReqReader, &loginDTO)
+		corId, err := readDTO(ctx, w.loginReqReader, &loginDTO)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				return err
@@ -60,7 +60,7 @@ func (w LoginWorker) Process(ctx context.Context) error {
 		}
 		cancel()
 
-		write(w.loginsWriter, loginDTO.Email, userLoginDTO)
+		write(w.loginsWriter, loginDTO.Email, userLoginDTO, corId)
 		log.Info().Msgf("sent UserLoginDTO: %+v", userLoginDTO)
 	}
 }

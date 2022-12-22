@@ -40,7 +40,7 @@ func (w FindRecipesWorker) Process(ctx context.Context) error {
 		}
 
 		var dto recipe.FindRecipeDTO
-		err := readDTO(ctx, w.reqRecipesReader, &dto)
+		corID, err := readDTO(ctx, w.reqRecipesReader, &dto)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				return err
@@ -63,7 +63,7 @@ func (w FindRecipesWorker) Process(ctx context.Context) error {
 				recipeDTO.Recipe = recip
 			}
 
-			write(w.recipeWriter, dto.ID, recipeDTO)
+			write(w.recipeWriter, dto.ID, recipeDTO, corID)
 			log.Info().Msgf("sent RecipeDTO: %+v", recipeDTO)
 		}
 
@@ -77,13 +77,13 @@ func (w FindRecipesWorker) Process(ctx context.Context) error {
 				write(w.recipeWriter, dto.UserID, recipe.RecipeDTO{
 					UserID: dto.UserID,
 					Error:  err.Error(),
-				})
+				}, corID)
 			} else {
 				for _, recip := range recipes {
 					write(w.recipeWriter, dto.UserID, recipe.RecipeDTO{
 						Recipe: recip,
 						UserID: dto.UserID,
-					})
+					}, corID)
 				}
 			}
 		}

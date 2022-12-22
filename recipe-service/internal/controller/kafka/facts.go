@@ -37,7 +37,7 @@ func (w RecipeNutritionFactsWorker) Process(ctx context.Context) error {
 		}
 
 		var dto recipe.RecipeNutritionsDTO
-		err := readDTO(ctx, w.nutritionFactsReader, &dto)
+		_, err := readDTO(ctx, w.nutritionFactsReader, &dto)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				return err

@@ -39,7 +39,8 @@ type ControllerTestSuite struct {
 func (suite *ControllerTestSuite) TestController() {
 	suite.Run("create recipe send nutrition facts and get by id", func() {
 		newRecipeDTO := suite.randomCreateRecipe()
-		write(suite.newRecipeWriter, newRecipeDTO.Name, newRecipeDTO)
+		corID := generateCorrelationID()
+		write(suite.newRecipeWriter, newRecipeDTO.Name, newRecipeDTO, corID)
 
 		var createdDTO recipe.RecipeDTO
 		{
@@ -48,7 +49,7 @@ func (suite *ControllerTestSuite) TestController() {
 			for {
 				message, err := suite.recipesReader.ReadMessage(ctx)
 				require.NoError(suite.T(), err, "ошибка при чтении сообщения")
-				if string(message.Key) != newRecipeDTO.Name {
+				if !checkCorrelationID(message, corID) {
 					continue
 				}
 
@@ -69,12 +70,12 @@ func (suite *ControllerTestSuite) TestController() {
 			NutritionFacts: suite.randomNutritionFacts(),
 			Inaccurate:     false,
 		}
-		write(suite.nutritionFactsWriter, recipeNutritionsDTO.RecipeID, recipeNutritionsDTO)
+		write(suite.nutritionFactsWriter, recipeNutritionsDTO.RecipeID, recipeNutritionsDTO, "")
 
 		findRecipeDTO := recipe.FindRecipeDTO{
 			ID: createdDTO.ID,
 		}
-		write(suite.reqRecipeWriter, findRecipeDTO.ID, findRecipeDTO)
+		write(suite.reqRecipeWriter, findRecipeDTO.ID, findRecipeDTO, corID)
 
 		var gotDTO recipe.RecipeDTO
 		{
@@ -83,7 +84,7 @@ func (suite *ControllerTestSuite) TestController() {
 			for {
 				message, err := suite.recipesReader.ReadMessage(ctx)
 				require.NoError(suite.T(), err, "ошибка при чтении сообщения")
-				if string(message.Key) != findRecipeDTO.ID {
+				if !checkCorrelationID(message, corID) {
 					continue
 				}
 

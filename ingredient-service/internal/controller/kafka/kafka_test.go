@@ -38,7 +38,8 @@ type ControllerTestSuite struct {
 func (suite *ControllerTestSuite) TestController() {
 	suite.Run("create ingredient and find by id", func() {
 		newIngredientDTO := suite.randomCreateIngredient()
-		write(suite.newIngredientWriter, newIngredientDTO.Name, newIngredientDTO)
+		corID := generateCorrelationID()
+		write(suite.newIngredientWriter, newIngredientDTO.Name, newIngredientDTO, corID)
 
 		var createdDTO ingredient.IngredientDTO
 		{
@@ -46,7 +47,7 @@ func (suite *ControllerTestSuite) TestController() {
 			defer cancel()
 			for {
 				message, err := suite.ingredientsReader.ReadMessage(ctx)
-				if string(message.Key) != newIngredientDTO.Name {
+				if !checkCorrelationID(message, corID) {
 					continue
 				}
 				require.NoError(suite.T(), err, "ошибка при чтении сообщения")
@@ -64,14 +65,14 @@ func (suite *ControllerTestSuite) TestController() {
 		findDTO := ingredient.FindIngredientsDTO{
 			ID: createdDTO.ID,
 		}
-		write(suite.reqIngredientsWriter, findDTO.ID, findDTO)
+		write(suite.reqIngredientsWriter, findDTO.ID, findDTO, corID)
 
 		{
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
 			for {
 				message, err := suite.ingredientsReader.ReadMessage(ctx)
-				if string(message.Key) != findDTO.ID {
+				if !checkCorrelationID(message, corID) {
 					continue
 				}
 				require.NoError(suite.T(), err, "ошибка при чтении сообщения")
@@ -89,7 +90,7 @@ func (suite *ControllerTestSuite) TestController() {
 }
 
 func (suite *ControllerTestSuite) SetupSuite() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339}).Level(zerolog.InfoLevel)
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339}).Level(zerolog.ErrorLevel)
 	kafkaBroker := os.Getenv("TEST_KAFKA_BROKERS")
 	if len(kafkaBroker) == 0 {
 		kafkaBroker = "localhost:29092"
@@ -101,7 +102,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 
 	var err error
 
-	err = createTopics(kafkaBroker)
+	err = createTopics(kafkaBroker, TopicIngredients, TopicIngredientsReq, TopicIngredientsNew)
 	suite.Require().NoError(err)
 
 	{

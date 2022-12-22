@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/golang-migrate/migrate/v4 v4.15.2
+	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/rs/zerolog v1.28.0
 	github.com/segmentio/kafka-go v0.4.38

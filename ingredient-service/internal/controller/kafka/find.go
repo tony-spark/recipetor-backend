@@ -39,7 +39,7 @@ func (w FindIngredientsWorker) Process(ctx context.Context) error {
 		}
 
 		var dto ingredient.FindIngredientsDTO
-		err := readDTO(ctx, w.ingredientsReqReader, &dto)
+		corID, err := readDTO(ctx, w.ingredientsReqReader, &dto)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				return err
@@ -63,7 +63,7 @@ func (w FindIngredientsWorker) Process(ctx context.Context) error {
 				ingredientDTO.Ingredient = ingr
 			}
 
-			write(w.ingredientsWriter, dto.ID, ingredientDTO)
+			write(w.ingredientsWriter, dto.ID, ingredientDTO, corID)
 			log.Info().Msgf("sent IngredientDTO: %+v", ingredientDTO)
 		}
 
@@ -78,7 +78,7 @@ func (w FindIngredientsWorker) Process(ctx context.Context) error {
 					Error:     err.Error(),
 					NameQuery: dto.NameQuery,
 				}
-				write(w.ingredientsWriter, dto.NameQuery, ingredientDTO)
+				write(w.ingredientsWriter, dto.NameQuery, ingredientDTO, corID)
 				log.Info().Msgf("sent IngredientDTO: %+v", ingredientDTO)
 			}
 
@@ -87,7 +87,7 @@ func (w FindIngredientsWorker) Process(ctx context.Context) error {
 					Ingredient: ingr,
 					NameQuery:  dto.NameQuery,
 				}
-				write(w.ingredientsWriter, dto.NameQuery, ingredientDTO)
+				write(w.ingredientsWriter, dto.NameQuery, ingredientDTO, corID)
 				log.Info().Msgf("sent IngredientDTO: %+v", ingredientDTO)
 			}
 

@@ -39,7 +39,7 @@ func (w AddIngredientWorker) Process(ctx context.Context) error {
 		}
 
 		var dto ingredient.CreateIngredientDTO
-		err := readDTO(ctx, w.newIngredientsReader, &dto)
+		corID, err := readDTO(ctx, w.newIngredientsReader, &dto)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				return err
@@ -67,7 +67,7 @@ func (w AddIngredientWorker) Process(ctx context.Context) error {
 			}
 		}
 
-		write(w.ingredientsWriter, dto.Name, ingredientDTO)
+		write(w.ingredientsWriter, dto.Name, ingredientDTO, corID)
 		log.Info().Msgf("sent IngredientDTO: %+v", ingredientDTO)
 	}
 }

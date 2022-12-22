@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	KeyCorrelationId = "correlation_id"
+	KeyCorrelationID = "correlation_id"
 )
 
 func logdf(msg string, a ...interface{}) {
@@ -66,7 +66,7 @@ func readDTO(ctx context.Context, reader *kafka.Reader, obj interface{}) (string
 	}
 
 	for _, h := range m.Headers {
-		if h.Key == KeyCorrelationId {
+		if h.Key == KeyCorrelationID {
 			return string(h.Value), nil
 		}
 	}
@@ -74,7 +74,7 @@ func readDTO(ctx context.Context, reader *kafka.Reader, obj interface{}) (string
 	return "", nil
 }
 
-func write(writer *kafka.Writer, key string, msg interface{}, correlationId string) {
+func write(writer *kafka.Writer, key string, msg interface{}, correlationID string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -88,11 +88,11 @@ func write(writer *kafka.Writer, key string, msg interface{}, correlationId stri
 		Key:   []byte(key),
 		Value: bs,
 	}
-	if len(correlationId) > 0 {
+	if len(correlationID) > 0 {
 		kmsg.Headers = []kafka.Header{
 			{
-				Key:   KeyCorrelationId,
-				Value: []byte(correlationId),
+				Key:   KeyCorrelationID,
+				Value: []byte(correlationID),
 			},
 		}
 	}
@@ -103,14 +103,14 @@ func write(writer *kafka.Writer, key string, msg interface{}, correlationId stri
 	}
 }
 
-func generateCorrelationId() string {
+func generateCorrelationID() string {
 	return uuid.New().String()
 }
 
-func checkCorrelationId(msg kafka.Message, correlationId string) bool {
+func checkCorrelationID(msg kafka.Message, correlationID string) bool {
 	for _, h := range msg.Headers {
-		if h.Key == KeyCorrelationId {
-			return correlationId == string(h.Value)
+		if h.Key == KeyCorrelationID {
+			return correlationID == string(h.Value)
 		}
 	}
 	return false

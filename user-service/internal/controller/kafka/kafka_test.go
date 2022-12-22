@@ -40,7 +40,7 @@ type ControllerTestSuite struct {
 func (suite *ControllerTestSuite) TestController() {
 	suite.Run("user registration and login", func() {
 		registerDTO := suite.randomCreateUser()
-		corId := generateCorrelationId()
+		corId := generateCorrelationID()
 		write(suite.registrationsWriter, registerDTO.Email, registerDTO, corId)
 
 		{
@@ -48,7 +48,7 @@ func (suite *ControllerTestSuite) TestController() {
 			defer cancel()
 			for {
 				message, err := suite.registrationsReader.ReadMessage(ctx)
-				if !checkCorrelationId(message, corId) {
+				if !checkCorrelationID(message, corId) {
 					continue
 				}
 				require.NoError(suite.T(), err, "ошибка при чтении сообщения")
@@ -73,7 +73,7 @@ func (suite *ControllerTestSuite) TestController() {
 				var userLoginDTO user.UserLoginDTO
 				err = json.Unmarshal(message.Value, &userLoginDTO)
 				require.NoError(suite.T(), err, "ошибка при раскодировании сообщения")
-				if !checkCorrelationId(message, corId) {
+				if !checkCorrelationID(message, corId) {
 					continue
 				}
 				assert.Empty(suite.T(), userLoginDTO.Error)

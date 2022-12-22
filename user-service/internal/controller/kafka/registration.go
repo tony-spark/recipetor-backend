@@ -40,7 +40,7 @@ func (w RegistrationWorker) Process(ctx context.Context) error {
 		}
 
 		var dto user.CreateUserDTO
-		corId, err := readDTO(ctx, w.regReqReader, &dto)
+		corID, err := readDTO(ctx, w.regReqReader, &dto)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				return err
@@ -61,7 +61,7 @@ func (w RegistrationWorker) Process(ctx context.Context) error {
 		}
 		cancel()
 
-		write(w.registrationsWriter, dto.Email, registrationDTO, corId)
+		write(w.registrationsWriter, dto.Email, registrationDTO, corID)
 		log.Info().Msgf("sent UserRegistrationDTO: %+v", registrationDTO)
 	}
 }

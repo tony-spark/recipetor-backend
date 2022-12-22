@@ -41,6 +41,7 @@ jobs:
           TEST_MONGO_DSN: mongodb://test:test@mongo-test-db:27017/test?authSource=admin
           TEST_KAFKA_BROKERS: kafka:9092
         run: |
+          sleep 30
           cd user-service
           go test -v -cover ./...
 
@@ -80,6 +81,7 @@ jobs:
           TEST_MONGO_DSN: mongodb://test:test@mongo-test-db:27017/test?authSource=admin
           TEST_KAFKA_BROKERS: kafka:9092
         run: |
+          sleep 30
           cd ingredient-service
           go test -v -cover ./...
 
@@ -119,6 +121,7 @@ jobs:
           TEST_MONGO_DSN: mongodb://test:test@mongo-test-db:27017/test?authSource=admin
           TEST_KAFKA_BROKERS: kafka:9092
         run: |
+          sleep 30
           cd recipe-service
           go test -v -cover ./...
 
@@ -152,5 +155,6 @@ jobs:
           TEST_MONGO_DSN: mongodb://test:test@mongo-test-db:27017/test?authSource=admin
           TEST_KAFKA_BROKERS: kafka:9092
         run: |
+          sleep 30
           cd nutrition-facts-service
           go test -v -cover ./...
